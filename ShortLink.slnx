@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="ShortLink.Api/ShortLink.Api.csproj" />
+    <Project Path="src/ShortLink.Api/ShortLink.Api.csproj" />
     <Project Path="src/ShortLink.Application/ShortLink.Application.csproj" />
     <Project Path="src/ShortLink.Domain/ShortLink.Domain.csproj" />
     <Project Path="src/ShortLink.Infrastructure/ShortLink.Infrastructure.csproj" />
