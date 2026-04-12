@@ -14,4 +14,9 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\src\ShortLink.Application\ShortLink.Application.csproj" />
+    <ProjectReference Include="..\src\ShortLink.Infrastructure\ShortLink.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
