@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using ShortLink.Infrastructure.Data;
+using ShortLink.Infrastructure.Dependencies;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,6 +9,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+var connectionString = builder.Configuration.GetConnectionString("conStr");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "Connection string 'conStr' is not configured. Set it in User Secrets or environment variables.");
+}
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlServer(connectionString);
+});
+
+// project Dependencies
+builder.Services.AddInfrastructureDependencies();
 
 var app = builder.Build();
 
