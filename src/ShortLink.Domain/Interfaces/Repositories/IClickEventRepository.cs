@@ -7,10 +7,10 @@ namespace ShortLink.Domain.Interfaces.Repositories;
 public interface IClickEventRepository
 {
     Task<ClickEvent> CreateAsync(ClickEvent clickEvent);
-    Task<IEnumerable<ClickEvent>> GetByLinkIdAsync(Guid linkId, int page, int pageSize);
-    Task<int> GetClickCountAsync(Guid linkId);
-    Task<IEnumerable<DailyClickStats>> GetDailyClicksAsync(Guid linkId, int days);
-    Task<IEnumerable<ReferrerStats>> GetTopReferrersAsync(Guid linkId, int limit);
-    Task<IEnumerable<CountryStats>> GetCountryStatsAsync(Guid linkId);
-    Task<IEnumerable<DeviceStats>> GetDeviceStatsAsync(Guid linkId);
+    Task<IEnumerable<ClickEvent>> GetByUrlIdAsync(Guid urlId, int page, int pageSize);
+    Task<int> GetClickCountAsync(Guid urlId);
+    Task<IEnumerable<DailyClickStats>> GetDailyClicksAsync(Guid urlId, int days);
+    Task<IEnumerable<ReferrerStats>> GetTopReferrersAsync(Guid urlId, int limit);
+    Task<IEnumerable<CountryStats>> GetCountryStatsAsync(Guid urlId);
+    Task<IEnumerable<DeviceStats>> GetDeviceStatsAsync(Guid linurlIdkId);
 }

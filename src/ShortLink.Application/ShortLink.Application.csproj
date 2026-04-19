@@ -5,7 +5,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="DTOs\Admin\" />
+    <Folder Include="Features\Admin\" />
+    <Folder Include="Features\Admin\Interfaces\" />
+    <Folder Include="Features\ClickEvent\" />
+    <Folder Include="Features\ClickEvent\Commands\" />
+    <Folder Include="Features\ClickEvent\Commands\CreateLink\" />
+    <Folder Include="Features\ClickEvent\Queries\" />
+    <Folder Include="Features\ShortLink\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="MediatR" Version="13.1.0" />
   </ItemGroup>
 
   <PropertyGroup>

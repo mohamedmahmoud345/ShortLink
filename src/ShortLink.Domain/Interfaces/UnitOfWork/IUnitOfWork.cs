@@ -1,4 +1,5 @@
 
+
 using ShortLink.Domain.Interfaces.Repositories;
 
 namespace ShortLink.Domain.Interfaces.UnitOfWork;
@@ -9,3 +10,4 @@ public interface IUnitOfWork
     IClickEventRepository ClickEvents { get; }
     Task<int> SaveChangesAsync();
 }
+

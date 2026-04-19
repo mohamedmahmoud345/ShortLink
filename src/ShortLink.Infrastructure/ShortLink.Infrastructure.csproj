@@ -9,8 +9,10 @@
     <Folder Include="Dapper\" />
     <Folder Include="Data\" />
     <Folder Include="Data\Configurations\" />
+    <Folder Include="Data\Identity\" />
     <Folder Include="Dependencies\" />
     <Folder Include="Repositories\" />
+    <Folder Include="Repositories\Admin\" />
     <Folder Include="UnitofWork\" />
   </ItemGroup>
 

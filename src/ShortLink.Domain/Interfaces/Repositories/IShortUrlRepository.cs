@@ -1,4 +1,5 @@
 
+
 using ShortLink.Domain.Entities;
 
 namespace ShortLink.Domain.Interfaces.Repositories;
@@ -13,5 +14,5 @@ public interface IShortUrlRepository
     Task<ShortUrl> UpdateAsync(ShortUrl shortUrl);
     Task<bool> DeleteAsync(Guid id);
     Task<bool> ExistsAsync(string shortCode);
-    Task<bool> IsOwnedByUserAsync(Guid linkId, Guid userId);
+    Task<bool> IsOwnedByUserAsync(Guid urlId, Guid userId);
 }

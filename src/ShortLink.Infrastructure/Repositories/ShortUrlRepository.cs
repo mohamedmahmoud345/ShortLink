@@ -21,7 +21,6 @@ public class ShortUrlRepository : IShortUrlRepository
     public async Task<ShortUrl?> GetByIdAsync(Guid id)
     {
         return await _context.ShortUrls
-            .Include(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
     public async Task<ShortUrl?> GetByShortCodeAsync(string shortCode)
@@ -39,7 +38,6 @@ public class ShortUrlRepository : IShortUrlRepository
     public async Task<IEnumerable<ShortUrl>> GetAllAsync()
     {
         return await _context.ShortUrls
-            .Include(x => x.User)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
     }

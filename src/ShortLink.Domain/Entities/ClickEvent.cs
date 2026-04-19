@@ -6,7 +6,7 @@ namespace ShortLink.Domain.Entities;
 public class ClickEvent
 {
     public Guid Id { get; set; }
-    public Guid ShortLinkId { get; set; }
+    public Guid ShortUrlId { get; set; }
     public DateTime ClickedAt { get; set; }
     public string Referrer { get; set; }
     public string Country { get; set; }

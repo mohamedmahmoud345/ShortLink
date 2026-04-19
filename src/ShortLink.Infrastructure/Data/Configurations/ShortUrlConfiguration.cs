@@ -1,16 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ShortLink.Domain.Entities;
+using ShortLink.Infrastructure.Data.Identity;
 
 namespace ShortLink.Infrastructure.Data.Configurations;
 
-public class ShortLinkConfiguration : IEntityTypeConfiguration<ShortUrl>
+public class ShortUrlConfiguration : IEntityTypeConfiguration<ShortUrl>
 {
     public void Configure(EntityTypeBuilder<ShortUrl> builder)
     {
         builder.HasKey(_ => _.Id);
 
-        builder.Property(_ => _.OriginalUrl)
+        builder.Property(_ => _.OriginalLink)
             .HasMaxLength(2048)
             .IsRequired();
 
@@ -20,8 +21,9 @@ public class ShortLinkConfiguration : IEntityTypeConfiguration<ShortUrl>
 
         builder.HasIndex(_ => _.ShortCode);
 
-        builder.HasMany(_ => _.ClickEvents)
-            .WithOne(_ => _.ShortUrl)
-            .HasForeignKey(_ => _.ShortLinkId);
+        builder.HasOne<ApplicationUser>()
+                  .WithMany(_ => _.Urls)
+                  .HasForeignKey(x => x.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
     }
 }

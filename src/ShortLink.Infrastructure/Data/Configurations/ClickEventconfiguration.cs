@@ -14,5 +14,10 @@ public class ClickEventconfiguration : IEntityTypeConfiguration<ClickEvent>
             .HasConversion<string>()
             .HasMaxLength(20)
             .IsRequired();
+
+        builder.HasOne(x => x.ShortUrl)
+            .WithMany(x => x.ClickEvents)
+            .HasForeignKey(x => x.ShortUrlId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
