@@ -5,15 +5,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Dependencies\" />
     <Folder Include="DTOs\" />
+    <Folder Include="DTOs\Account\" />
     <Folder Include="DTOs\Admin\" />
+    <Folder Include="Features\Account\Login\" />
     <Folder Include="Features\Admin\" />
+    <Folder Include="Features\Admin\Commands\" />
     <Folder Include="Features\Admin\Interfaces\" />
+    <Folder Include="Features\Admin\Queries\" />
     <Folder Include="Features\ClickEvent\" />
     <Folder Include="Features\ClickEvent\Commands\" />
     <Folder Include="Features\ClickEvent\Commands\CreateLink\" />
     <Folder Include="Features\ClickEvent\Queries\" />
     <Folder Include="Features\ShortLink\" />
+    <Folder Include="Services\" />
+    <Folder Include="Services\Auth\" />
   </ItemGroup>
 
   <ItemGroup>

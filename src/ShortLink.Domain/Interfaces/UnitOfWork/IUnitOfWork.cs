@@ -9,5 +9,6 @@ public interface IUnitOfWork
     IShortUrlRepository ShortUrls { get; }
     IClickEventRepository ClickEvents { get; }
     Task<int> SaveChangesAsync();
+    Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken = default);
 }
 
