@@ -8,11 +8,28 @@ using ShortLink.Infrastructure.Data.Identity;
 using ShortLink.Infrastructure.Data.SeedinData;
 using ShortLink.Infrastructure.Dependencies;
 using ShortLink.Application.Dependencies;
+using Microsoft.OpenApi.Models;
+using ShortLink.Api.Middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddRouting(op => op.LowercaseUrls = true);
 
 builder.Services.AddControllers();
+
+
+var corsStr = "AllowFrontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(corsStr, policy =>
+    {
+        policy.AllowAnyOrigin();
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+    });
+});
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -23,6 +40,37 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "Connection string 'conStr' is not configured. Set it in User Secrets or environment variables.");
 }
 
+builder.Services.AddSwaggerGen(opt =>
+{
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "ShortLink", Version = "v1" });
+
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enteer token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     {
@@ -91,14 +139,18 @@ using (var scope = app.Services.CreateScope())
         await RoleSeeder.SeedAdminUserAsync(userManager, roleManager, seedAdminEmail, seedAdminPassword);
     }
 }
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(corsStr);
 
 app.UseAuthentication();
 app.UseAuthorization();

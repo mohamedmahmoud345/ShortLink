@@ -36,14 +36,13 @@ namespace ShortLink.Api.Controllers
 
             return Ok(result);
         }
-
         [AllowAnonymous]
         [HttpPost("login")]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> Login(
-            [FromBody] LoginRequestDto request,
-            CancellationToken cancellationToken)
+                [FromBody] LoginRequestDto request,
+                CancellationToken cancellationToken)
         {
             var command = new LoginCommand(request.Email, request.Password);
             var result = await _mediator.Send(command, cancellationToken);
