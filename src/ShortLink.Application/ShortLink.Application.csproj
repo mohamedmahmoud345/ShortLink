@@ -16,9 +16,10 @@
     <Folder Include="Features\Admin\Queries\" />
     <Folder Include="Features\ClickEvent\" />
     <Folder Include="Features\ClickEvent\Commands\" />
-    <Folder Include="Features\ClickEvent\Commands\CreateLink\" />
     <Folder Include="Features\ClickEvent\Queries\" />
-    <Folder Include="Features\ShortLink\" />
+    <Folder Include="Features\ShortUrl\Commands\CreateShortUrl\GenerateCode\" />
+    <Folder Include="Features\ShortUrl\Queries\GetAllAdmin\" />
+    <Folder Include="Features\ShortUrl\Queries\GetById\" />
     <Folder Include="Services\" />
     <Folder Include="Services\Auth\" />
   </ItemGroup>

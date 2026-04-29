@@ -1,9 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ShortLink.Application.Services.Auth;
+using ShortLink.Infrastructure.Data.Identity;
 
 
 namespace ShortLink.Infrastructure.Services.Auth;
@@ -27,7 +29,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         {
             new Claim(ClaimTypes.NameIdentifier, tokenRequest.UserId.ToString()),
             new Claim(ClaimTypes.Name, tokenRequest.UserName),
-            new Claim(ClaimTypes.Email, tokenRequest.Email)
+            new Claim(ClaimTypes.Email, tokenRequest.Email),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));

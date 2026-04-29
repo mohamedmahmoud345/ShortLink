@@ -14,7 +14,7 @@ public class ShortUrlRepository : IShortUrlRepository
     }
     public async Task<ShortUrl> CreateAsync(ShortUrl shortUrl)
     {
-        _context.ShortUrls.Add(shortUrl);
+        await _context.ShortUrls.AddAsync(shortUrl);
         await _context.SaveChangesAsync();
         return shortUrl;
     }

@@ -16,7 +16,7 @@ public class ShortUrlConfiguration : IEntityTypeConfiguration<ShortUrl>
             .IsRequired();
 
         builder.Property(_ => _.ShortCode)
-            .HasMaxLength(20)
+            .HasMaxLength(32)
             .IsRequired();
 
         builder.HasIndex(_ => _.ShortCode);
