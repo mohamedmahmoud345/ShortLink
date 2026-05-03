@@ -18,7 +18,6 @@ public static class InfrastructureDependencies
         services.AddScoped<IShortUrlRepository, ShortUrlRepository>();
         services.AddScoped<IUnitOfWork, UnitofWork.UnitOfWork>();
         services.AddSingleton<DapperContext>();
-        services.AddScoped<IGetAllShortUrlsByUserIdReadRepository, GetAllShortLinksByUserIdReadRepository>();
         services.AddScoped<IGetAllUsersReadRepository, GetAllUsersReadRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

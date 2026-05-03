@@ -15,13 +15,13 @@ public class ShortUrl
     public ICollection<ClickEvent> ClickEvents { get; set; } = new List<ClickEvent>();
 
 
-    public ShortUrl(Guid userId, string originalLink, DateTime? expiresAt)
+    public ShortUrl(Guid userId, string originalLink)
     {
         Id = Guid.NewGuid();
         UserId = userId;
         OriginalLink = originalLink;
         CreatedAt = DateTime.UtcNow;
-        ExpiresAt = expiresAt;
+        ExpiresAt = DateTime.UtcNow.AddDays(1);
         IsActive = true;
         Clicks = 0;
     }

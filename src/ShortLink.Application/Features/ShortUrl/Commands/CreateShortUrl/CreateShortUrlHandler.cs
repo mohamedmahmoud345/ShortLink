@@ -14,7 +14,7 @@ public class CreateShortUrlHandler : IRequestHandler<CreateShortUrlCommand, Crea
     }
     public async Task<CreateShortUrlResponse?> Handle(CreateShortUrlCommand request, CancellationToken cancellationToken)
     {
-        var shortUrlObj = new Domain.Entities.ShortUrl(request.UserId, request.OriginalLink, null);
+        var shortUrlObj = new Domain.Entities.ShortUrl(request.UserId, request.OriginalLink);
 
         var shortCode = Base62.Encode(shortUrlObj.Id);
 

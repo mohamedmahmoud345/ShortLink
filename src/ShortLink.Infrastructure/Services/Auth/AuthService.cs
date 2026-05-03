@@ -37,7 +37,8 @@ public class AuthService : IAuthService
                 throw new InvalidOperationException();
         });
 
-        var authDto = new AuthDto(user.Id, email, userName, true);
+        var roles = await _userMang.GetRolesAsync(user);
+        var authDto = new AuthDto(user.Id, email, userName, true, roles.ToList());
 
         return authDto;
     }
@@ -51,9 +52,10 @@ public class AuthService : IAuthService
         if (!result)
             return null;
 
-        var authDto = new AuthDto(existingUser.Id, email, existingUser.UserName!, true);
+        var roles = await _userMang.GetRolesAsync(existingUser);
+
+        var authDto = new AuthDto(existingUser.Id, email, existingUser.UserName!, true, roles.ToList());
 
         return authDto;
     }
-
 }

@@ -1,6 +1,7 @@
-namespace ShortLink.Application.DTOs.Admin;
 
-public class UserInfoDto
+namespace ShortLink.Application.Features.Admin.Queries.GetAllUsers;
+
+public class GetAllUsersReponse
 {
     public Guid UserId { get; set; }
     public string UserName { get; set; }

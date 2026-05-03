@@ -20,7 +20,7 @@ public class RegisterHandler : IRequestHandler<RegisterCommand, AuthResponse?>
         if (newUser == null || !newUser.Succeeded)
             return null;
 
-        var tokenRequest = new TokenRequestDto(newUser.Id, newUser.Name, newUser.Email);
+        var tokenRequest = new TokenRequestDto(newUser.Id, newUser.Name, newUser.Email, newUser.Roles);
 
         var token = _jwtToken.GenerateToken(tokenRequest);
 

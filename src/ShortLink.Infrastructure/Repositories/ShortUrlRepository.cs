@@ -60,9 +60,9 @@ public class ShortUrlRepository : IShortUrlRepository
     {
         return await _context.ShortUrls.AnyAsync(x => x.ShortCode == shortCode);
     }
-    public async Task<bool> IsOwnedByUserAsync(Guid linkId, Guid userId)
+    public async Task<ShortUrl?> GetByIdForUserAsync(Guid linkId, Guid userId)
     {
-        return await _context.ShortUrls.AnyAsync(x => x.Id == linkId && x.UserId == userId);
+        return await _context.ShortUrls.FirstOrDefaultAsync(x => x.Id == linkId && x.UserId == userId);
     }
 }
 

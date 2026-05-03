@@ -21,7 +21,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, AuthResponse?>
         if (authResult == null || !authResult.Succeeded)
             return null;
 
-        var tokenRequest = new TokenRequestDto(authResult.Id, authResult.Name, authResult.Email);
+        var tokenRequest = new TokenRequestDto(authResult.Id, authResult.Name, authResult.Email, authResult.Roles);
 
         var token = _jwtToken.GenerateToken(tokenRequest);
 

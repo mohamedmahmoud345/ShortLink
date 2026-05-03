@@ -14,12 +14,15 @@
     <Folder Include="Features\Admin\Commands\" />
     <Folder Include="Features\Admin\Interfaces\" />
     <Folder Include="Features\Admin\Queries\" />
+    <Folder Include="Features\Admin\Queries\GetAllUsers\" />
     <Folder Include="Features\ClickEvent\" />
     <Folder Include="Features\ClickEvent\Commands\" />
     <Folder Include="Features\ClickEvent\Queries\" />
     <Folder Include="Features\ShortUrl\Commands\CreateShortUrl\GenerateCode\" />
-    <Folder Include="Features\ShortUrl\Queries\GetAllAdmin\" />
+    <Folder Include="Features\ShortUrl\Commands\DeleteUrl\" />
+    <Folder Include="Features\ShortUrl\Commands\UpdateShortUrl\" />
     <Folder Include="Features\ShortUrl\Queries\GetById\" />
+    <Folder Include="Features\ShortUrl\Queries\GetByShortCode\" />
     <Folder Include="Services\" />
     <Folder Include="Services\Auth\" />
   </ItemGroup>
