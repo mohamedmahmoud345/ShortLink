@@ -10,6 +10,9 @@ using ShortLink.Infrastructure.Dependencies;
 using ShortLink.Application.Dependencies;
 using Microsoft.OpenApi.Models;
 using ShortLink.Api.Middlewares;
+using Humanizer.Configuration;
+using ShortLink.Application.Services;
+using ShortLink.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -119,6 +122,18 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddInfrastructureDependencies()
     .AddApplicationDependencies();
 
+builder.Services.AddHttpClient<IGeoIpService, GeoIpService>(client =>
+{
+    client.BaseAddress = new Uri("http://ip-api.com/");
+});
+
+// redis configuraiton
+var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnectionString;
+    options.InstanceName = "ShortLink:"; 
+});
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

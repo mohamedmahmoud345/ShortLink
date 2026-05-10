@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.15" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
@@ -18,6 +19,7 @@
     <Folder Include="Controllers\" />
     <Folder Include="DTOs\" />
     <Folder Include="DTOs\Account\" />
+    <Folder Include="DTOs\ClickEvent\" />
     <Folder Include="DTOs\ShortUrl\" />
     <Folder Include="Middlewares\" />
   </ItemGroup>
