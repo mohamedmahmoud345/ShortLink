@@ -1,6 +1,7 @@
 
 using MediatR;
 using ShortLink.Application.Features.ShortUrl.Commands.CreateShortUrl.GenerateCode;
+using ShortLink.Application.Services;
 using ShortLink.Domain.Interfaces.UnitOfWork;
 
 namespace ShortLink.Application.Features.ShortUrl.Commands.CreateShortUrl;
@@ -24,6 +25,7 @@ public class CreateShortUrlHandler : IRequestHandler<CreateShortUrlCommand, Crea
 
         shortUrlObj.AddShortCode(shortCode);
         await _unitOfWork.ShortUrls.CreateAsync(shortUrlObj);
+
 
         return new CreateShortUrlResponse()
         {

@@ -12,6 +12,5 @@ public class ClickEvent
     public string Country { get; set; }
     public DeviceType DeviceType { get; set; }
     public string IpAddress { get; set; }
-
     public ShortUrl ShortUrl { get; set; }
 }
