@@ -4,14 +4,16 @@ import "os"
 
 type Config struct {
 	ConStr       string
-	RedisAddress string
 	Port         string
+	RedisAddr    string
+	RedisPass    string
 }
 
 func LoadConfig() *Config {
 	return &Config{
 		ConStr: os.Getenv("CON_STR"),
-		RedisAddress: os.Getenv("REDIS_ADDRESS"),
 		Port: os.Getenv("PORT"),
+		RedisAddr: os.Getenv("REDIS_ADDRESS"),
+		RedisPass: os.Getenv("REDIS_PASSWORD"),
 	}
 }
