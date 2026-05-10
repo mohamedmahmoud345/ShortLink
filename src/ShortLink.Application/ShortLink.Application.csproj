@@ -9,6 +9,7 @@
     <Folder Include="DTOs\" />
     <Folder Include="DTOs\Account\" />
     <Folder Include="DTOs\Admin\" />
+    <Folder Include="DTOs\IpResponse\" />
     <Folder Include="Features\Account\Login\" />
     <Folder Include="Features\Admin\" />
     <Folder Include="Features\Admin\Commands\" />
@@ -17,6 +18,7 @@
     <Folder Include="Features\Admin\Queries\GetAllUsers\" />
     <Folder Include="Features\ClickEvent\" />
     <Folder Include="Features\ClickEvent\Commands\" />
+    <Folder Include="Features\ClickEvent\Commands\RecordClickEvent\" />
     <Folder Include="Features\ClickEvent\Queries\" />
     <Folder Include="Features\ShortUrl\Commands\CreateShortUrl\GenerateCode\" />
     <Folder Include="Features\ShortUrl\Commands\DeleteUrl\" />
