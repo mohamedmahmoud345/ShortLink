@@ -1,13 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
+	"github.com/mohamedmahmoud345/shortlink/go/redirector/internal/cache"
 	"github.com/mohamedmahmoud345/shortlink/go/redirector/internal/config"
 
 	router "github.com/mohamedmahmoud345/shortlink/go/redirector/internal/http"
+	_ "github.com/denisenkom/go-mssqldb"
 )
 
 func main() {
@@ -18,11 +23,36 @@ func main() {
 
 	cfg := config.LoadConfig()
 
-	// 3. Initialize Chi Router[cite: 1]
-	r := router.NewRouter()
+	// conect to sql server 
+	db, err := sql.Open("sqlserver", cfg.ConStr)
+	if err != nil {
+		log.Fatalf("Error preparing SQL connection: %v", err)
+	}
+	defer db.Close()
 
-	// 4. Start Server[cite: 1]
-	log.Printf("Redirector starting on port %s", cfg.Port)
+	if err := db.Ping(); err != nil {
+		log.Fatalf("SQL Database is unreachable: %v", err)
+	}
+	log.Println("successfully connected to sql server")
+
+	redisCache, err := cache.NewCache(cfg.RedisAddr, cfg.RedisPass)
+	if err != nil {
+		log.Fatalf("Redis Database is unreachable: %v", err)
+	}
+	log.Println("Successfully connected to Redis Container!")
+
+	h := router.NewHandler(db, redisCache)
+
+	r := chi.NewRouter()
+	
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	r.Get("/healthz", h.HandleHealth)
+	r.Get("/{shortCode}", h.HandleRedirect)
+
+	// 5. Start HTTP Server
+	log.Printf("Starting Go redirector on port %s", cfg.Port)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {
 		log.Fatal(err)
 	}

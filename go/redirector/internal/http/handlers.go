@@ -1,23 +1,122 @@
 package http
 
 import (
+	"context"
+	"database/sql"
+	"log"
+	"net"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mohamedmahmoud345/shortlink/go/redirector/internal/analytics"
+	"github.com/mohamedmahmoud345/shortlink/go/redirector/internal/cache"
+	"github.com/redis/go-redis/v9"
 )
 
-func HandleHealth(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Ok"))
+type Handler struct {
+	DB *sql.DB
+	Cache *cache.Cache
 }
 
-func HandleRedirect(w http.ResponseWriter, r *http.Request){
-	shortCode := chi.URLParam(r, "shortCode")
+func NewHandler(db *sql.DB, cache *cache.Cache) *Handler {
+	return &Handler{
+		DB: db,
+		Cache: cache,
+	}
+}
 
-	if shortCode == "test" {
-		http.Redirect(w, r, "https://google.com", http.StatusFound)
+func (h *Handler) HandleHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
+func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
+	ctx := r.Context()
+	shortCode := chi.URLParam(r, "shortCode")
+	cacheKey := "link:" + shortCode
+
+	// check redis (cache hit?)
+	originalUrl, err := h.Cache.Client.Get(ctx, cacheKey).Result()
+	if err == nil {
+		payload := analytics.ClickPayload{
+        ShortCode: shortCode,
+        Referrer:  r.Referer(),
+        IpAddress: clientIP(r),
+        UserAgent: r.UserAgent(),
+    	}
+   		go analytics.RecordClick(payload) 
+		http.Redirect(w, r, originalUrl, http.StatusFound)
+		return 
+	}else if err != redis.Nil {
+		// Log real redis errors, but don't block the user (fail-open to database)
+	}
+
+	// cache miss 
+	var dbURL string
+	var expiresAt sql.NullTime
+
+	query := "SELECT OriginalLink, ExpiresAt FROM ShortUrls WHERE ShortCode = @ShortCode AND IsActive = 1"
+	err = h.DB.QueryRowContext(ctx, query, sql.Named("ShortCode", shortCode)).Scan(&dbURL, &expiresAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.NotFound(w, r)
+		}else {
+			http.Error(w, "Database error",  http.StatusInternalServerError)
+		}
 		return
 	}
 
-	http.NotFound(w, r)
+	var ttl time.Duration
+	maxTTL := 24 * time.Hour
+
+	if expiresAt.Valid {
+		now := time.Now()
+		if now.After(expiresAt.Time){
+			http.NotFound(w, r)
+			return
+		}
+
+		ttl = time.Until(expiresAt.Time)
+		if ttl > maxTTL {
+			ttl = maxTTL
+		}
+	}else {
+		ttl = maxTTL
+	}
+	
+	go func()  {
+		backgroundCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		_ = h.Cache.Client.Set(backgroundCtx, cacheKey, dbURL, ttl).Err()
+	}()
+
+	payload := analytics.ClickPayload{
+		ShortCode: shortCode,
+        Referrer:  r.Referer(),
+        IpAddress: clientIP(r),
+        UserAgent: r.UserAgent(),
+    }
+	log.Printf("Analytics: enqueue click for shortCode=%s ip=%s ref=%s", shortCode, payload.IpAddress, payload.Referrer)
+	go analytics.RecordClick(payload)
+	
+	http.Redirect(w, r, dbURL, http.StatusFound)	
+}
+
+func clientIP(r *http.Request) string {
+    // Prefer proxy headers if present
+    if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
+        parts := strings.Split(fwd, ",")
+        return strings.TrimSpace(parts[0])
+    }
+    if real := r.Header.Get("X-Real-IP"); real != "" {
+        return real
+    }
+
+    host, _, err := net.SplitHostPort(r.RemoteAddr)
+    if err == nil && host != "" {
+        return host
+    }
+    return r.RemoteAddr
 }

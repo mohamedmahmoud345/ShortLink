@@ -11,8 +11,5 @@ func NewRouter() *chi.Mux {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Get("/healthz", HandleHealth)
-	r.Get("/{shortCode}", HandleRedirect)
-
 	return r
 }
