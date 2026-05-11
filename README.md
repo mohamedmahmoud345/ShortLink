@@ -34,14 +34,9 @@ Go Redirector (Redis)      →  Fast public redirects
 - MediatR / CQRS
 - Swagger
 
----
-
-## Roadmap
-
-See `SCHEDULE.md` and `ROADMAP.md` for weekly progress.
 
 ---
 
 ## Setup (coming soon)
 
-Full setup instructions will be added after Week 6.
+Full setup instructions will be added later.
