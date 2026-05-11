@@ -9,6 +9,7 @@ using ShortLink.Infrastructure.Repositories;
 using ShortLink.Infrastructure.Repositories.Admin;
 using ShortLink.Infrastructure.Services;
 using ShortLink.Infrastructure.Services.Auth;
+using ShortLink.Infrastructure.Workers;
 
 namespace ShortLink.Infrastructure.Dependencies;
 
@@ -24,6 +25,7 @@ public static class InfrastructureDependencies
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<ICacheService, CacheService>();
+        services.AddHostedService<LinkCleanupService>();
 
         return services;
     }
