@@ -35,7 +35,8 @@ public class RecordClickEventHandler : IRequestHandler<RecordClickEventCommand, 
             Country = country,
             DeviceType = deviceType
         };
-
+        
+        shortUrl.Clicks++;
         await _unitOfWork.ClickEvents.CreateAsync(ClickEvent);
 
         return true;
