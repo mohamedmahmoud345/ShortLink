@@ -37,9 +37,14 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
 	shortCode := chi.URLParam(r, "shortCode")
 	cacheKey := "link:" + shortCode
 
+	start := time.Now()
+
 	// check redis (cache hit?)
 	originalUrl, err := h.Cache.Client.Get(ctx, cacheKey).Result()
 	if err == nil {
+ 		elapsed := time.Since(start)
+        log.Printf("redirect cache_hit shortCode=%s duration_ms=%d ip=%s", shortCode, elapsed.Milliseconds(), clientIP(r))
+
 		payload := analytics.ClickPayload{
         ShortCode: shortCode,
         Referrer:  r.Referer(),
@@ -51,18 +56,25 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
 		return 
 	}else if err != redis.Nil {
 		// Log real redis errors, but don't block the user (fail-open to database)
+		log.Printf("redis error getting key=%s err=%v", cacheKey, err)
 	}
 
 	// cache miss 
 	var dbURL string
 	var expiresAt sql.NullTime
 
+	dbStart := time.Now()
+
 	query := "SELECT OriginalLink, ExpiresAt FROM ShortUrls WHERE ShortCode = @ShortCode AND IsActive = 1"
 	err = h.DB.QueryRowContext(ctx, query, sql.Named("ShortCode", shortCode)).Scan(&dbURL, &expiresAt)
+	dbElapsed := time.Since(dbStart)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
+			log.Printf("redirect miss notfound shortCode=%s db_ms=%d", shortCode, dbElapsed.Milliseconds())
 			http.NotFound(w, r)
 		}else {
+			log.Printf("redirect db error shortCode=%s err=%v", shortCode, err)
 			http.Error(w, "Database error",  http.StatusInternalServerError)
 		}
 		return
@@ -74,6 +86,7 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
 	if expiresAt.Valid {
 		now := time.Now()
 		if now.After(expiresAt.Time){
+			log.Printf("redirect expired shortCode=%s expiresAt=%s", shortCode, expiresAt.Time)
 			http.NotFound(w, r)
 			return
 		}
@@ -100,6 +113,9 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
     }
 	log.Printf("Analytics: enqueue click for shortCode=%s ip=%s ref=%s", shortCode, payload.IpAddress, payload.Referrer)
 	go analytics.RecordClick(payload)
+	
+	total := time.Since(start)
+    log.Printf("redirect served shortCode=%s total_ms=%d db_ms=%d", shortCode, total.Milliseconds(), dbElapsed.Milliseconds())
 	
 	http.Redirect(w, r, dbURL, http.StatusFound)	
 }
