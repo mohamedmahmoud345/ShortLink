@@ -7,10 +7,9 @@
 
   <ItemGroup>
     <Folder Include="Dapper\" />
-    <Folder Include="Data\" />
     <Folder Include="Data\Configurations\" />
     <Folder Include="Data\Identity\" />
-    <Folder Include="Data\SeedinData\" />
+    <Folder Include="Data\SeedingData\" />
     <Folder Include="Dependencies\" />
     <Folder Include="Repositories\" />
     <Folder Include="Repositories\Admin\" />

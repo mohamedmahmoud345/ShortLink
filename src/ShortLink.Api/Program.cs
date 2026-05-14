@@ -5,12 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ShortLink.Infrastructure.Data;
 using ShortLink.Infrastructure.Data.Identity;
-using ShortLink.Infrastructure.Data.SeedinData;
+using ShortLink.Infrastructure.Data.SeedingData;
 using ShortLink.Infrastructure.Dependencies;
 using ShortLink.Application.Dependencies;
 using Microsoft.OpenApi.Models;
 using ShortLink.Api.Middlewares;
-using Humanizer.Configuration;
 using ShortLink.Application.Services;
 using ShortLink.Infrastructure.Services;
 
@@ -132,7 +131,7 @@ var redisConnectionString = builder.Configuration.GetConnectionString("RedisConn
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnectionString;
-    options.InstanceName = "ShortLink:"; 
+    options.InstanceName = "ShortLink:";
 });
 var app = builder.Build();
 

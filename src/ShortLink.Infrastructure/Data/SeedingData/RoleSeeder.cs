@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using ShortLink.Infrastructure.Data.Identity;
 
-namespace ShortLink.Infrastructure.Data.SeedinData;
+namespace ShortLink.Infrastructure.Data.SeedingData;
 
 public static class RoleSeeder
 {
