@@ -92,7 +92,7 @@ profile.cov
 # Go workspace file
 go.work
 go.work.sum
-
+*.go text eol=lf
 # env file
 .env
 

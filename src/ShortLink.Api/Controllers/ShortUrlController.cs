@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShortLink.Api.DTOs.ShortUrl;
 using ShortLink.Application.Features.Admin.Queries.GetAllUsers;
 using ShortLink.Application.Features.ShortUrl.Commands.CreateShortUrl;
@@ -14,6 +15,8 @@ using ShortLink.Application.Features.ShortUrl.Queries.GetByShortCode;
 
 namespace ShortLink.Api.Controllers
 {
+    [Authorize]
+    [EnableRateLimiting("PerUserPolicy")]
     [Route("api/[controller]")]
     [ApiController]
     public class ShortUrlController : ControllerBase
@@ -24,7 +27,6 @@ namespace ShortLink.Api.Controllers
             _mediator = mediator;
         }
 
-        [Authorize]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -43,7 +45,6 @@ namespace ShortLink.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = res.Id }, res);
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -60,7 +61,6 @@ namespace ShortLink.Api.Controllers
             return Ok(res);
         }
 
-        [Authorize]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -114,7 +114,6 @@ namespace ShortLink.Api.Controllers
             return Ok(res);
         }
 
-        [Authorize]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -130,7 +129,7 @@ namespace ShortLink.Api.Controllers
 
             return NoContent();
         }
-        [Authorize]
+        
         [HttpDelete("{urlId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

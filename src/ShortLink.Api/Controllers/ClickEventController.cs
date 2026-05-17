@@ -1,11 +1,14 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShortLink.Api.DTOs.ClickEvent;
+using ShortLink.Api.Filters;
 using ShortLink.Application.Features.ClickEvent.Commands.RecordClickEvent;
 
 namespace ShortLink.Api.Controllers
 {
+    // [EnableRateLimiting("PerUserPolicy")]
     [Route("api/[controller]")]
     [ApiController]
     public class ClickEventController : ControllerBase
@@ -17,6 +20,7 @@ namespace ShortLink.Api.Controllers
             _mediator = mediator;
         }
 
+        [InternalOnly]
         [HttpPost]
         public async Task<IActionResult> RecordClickEvent(RecordDto recordDto)
         {

@@ -12,6 +12,8 @@ using Microsoft.OpenApi.Models;
 using ShortLink.Api.Middlewares;
 using ShortLink.Application.Services;
 using ShortLink.Infrastructure.Services;
+using System.Threading.RateLimiting;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,24 @@ builder.Services.AddRouting(op => op.LowercaseUrls = true);
 
 builder.Services.AddControllers();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("PerUserPolicy", httpContext =>
+    {
+        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: userId,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            });
+    });
+});
 
 var corsStr = "AllowFrontend";
 builder.Services.AddCors(options =>
@@ -165,6 +185,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors(corsStr);
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

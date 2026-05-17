@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -32,8 +33,18 @@ func RecordClick(payload ClickPayload) {
 		Timeout: 5 * time.Second,
 	}
 
+	token := os.Getenv("INTERNAL_SECURE_TOKEN")
+
 	// 4. Perform the POST request
-	resp, err := client.Post(csApiUrl, "application/json", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", csApiUrl, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Printf("Analytics: Failed to build request: %v", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("INTERNAL_SECURE_TOKEN", token)
+
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Analytics: Failed to send data to C#: %v", err)
 		return
@@ -44,3 +55,4 @@ func RecordClick(payload ClickPayload) {
 		log.Printf("Analytics: C# API returned status: %d", resp.StatusCode)
 	}
 }
+

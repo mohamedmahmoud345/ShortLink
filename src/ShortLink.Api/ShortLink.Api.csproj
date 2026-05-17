@@ -21,6 +21,7 @@
     <Folder Include="DTOs\Account\" />
     <Folder Include="DTOs\ClickEvent\" />
     <Folder Include="DTOs\ShortUrl\" />
+    <Folder Include="Filters\" />
     <Folder Include="Middlewares\" />
   </ItemGroup>
 
