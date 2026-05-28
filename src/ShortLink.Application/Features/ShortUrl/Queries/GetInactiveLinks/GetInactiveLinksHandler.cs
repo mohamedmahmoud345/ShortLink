@@ -3,18 +3,18 @@ using MediatR;
 using ShortLink.Application.Features.ShortUrl.Queries.GetById;
 using ShortLink.Domain.Interfaces.UnitOfWork;
 
-namespace ShortLink.Application.Features.ShortUrl.Queries.GetAllByUserId;
+namespace ShortLink.Application.Features.ShortUrl.Queries.GetInactiveLinks;
 
-public class GetAllHandler : IRequestHandler<GetAllQuery, List<QueryResponse>>
+public class GetInactiveLinksHandler : IRequestHandler<GetInactiveLinksQuery, List<QueryResponse>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    public GetAllHandler(IUnitOfWork unitOfWork)
+    public GetInactiveLinksHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }
-    public async Task<List<QueryResponse>> Handle(GetAllQuery request, CancellationToken cancellationToken)
+    public async Task<List<QueryResponse>> Handle(GetInactiveLinksQuery request, CancellationToken cancellationToken)
     {
-        var links = await _unitOfWork.ShortUrls.GetAllByUserIdAsync(request.UserId);
+        var links = await _unitOfWork.ShortUrls.GetInactiveLinksAsync(request.UserId);
         if (!links.Any())
             return [];
 
