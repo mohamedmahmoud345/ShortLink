@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using ShortLink.Application.Common;
 
 namespace ShortLink.Api.Middlewares;
 
@@ -18,7 +19,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         var (statusCode, title) = exception switch
         {
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
-            KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
+            NotFoundException => (StatusCodes.Status404NotFound, "Not Found"),
             _ => (StatusCodes.Status500InternalServerError, "Server Error")
         };
 

@@ -20,6 +20,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRouting(op => op.LowercaseUrls = true);
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddControllers();
 
 builder.Services.AddRateLimiter(options =>
@@ -91,8 +94,7 @@ builder.Services.AddSwaggerGen(opt =>
         }
     });
 });
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddProblemDetails();
+
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     {
@@ -153,6 +155,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = redisConnectionString;
     options.InstanceName = "ShortLink:";
 });
+
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
