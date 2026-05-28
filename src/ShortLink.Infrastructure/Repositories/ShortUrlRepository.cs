@@ -64,5 +64,14 @@ public class ShortUrlRepository : IShortUrlRepository
     {
         return await _context.ShortUrls.FirstOrDefaultAsync(x => x.Id == linkId && x.UserId == userId);
     }
+
+    public async Task<IEnumerable<ShortUrl>> GetInactiveLinksAsync(Guid userId)
+    {
+        return await _context.ShortUrls
+            .IgnoreQueryFilters()
+            .Where(x => x.UserId == userId && x.IsActive == false)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
+    }
 }
 
