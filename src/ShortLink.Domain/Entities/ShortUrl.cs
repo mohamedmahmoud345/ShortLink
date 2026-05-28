@@ -21,7 +21,7 @@ public class ShortUrl
         UserId = userId;
         OriginalLink = originalLink;
         CreatedAt = DateTime.UtcNow;
-        ExpiresAt = DateTime.UtcNow.AddDays(1);
+        ExpiresAt = DateTime.UtcNow.AddDays(30);
         IsActive = true;
         Clicks = 0;
     }

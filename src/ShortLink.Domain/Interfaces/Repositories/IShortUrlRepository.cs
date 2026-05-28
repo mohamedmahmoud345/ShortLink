@@ -14,4 +14,5 @@ public interface IShortUrlRepository
     Task<bool> DeleteAsync(Guid id);
     Task<bool> ExistsAsync(string shortCode);
     Task<ShortUrl?> GetByIdForUserAsync(Guid urlId, Guid userId);
+    Task<IEnumerable<ShortUrl>> GetInactiveLinksAsync(Guid userId);
 }
