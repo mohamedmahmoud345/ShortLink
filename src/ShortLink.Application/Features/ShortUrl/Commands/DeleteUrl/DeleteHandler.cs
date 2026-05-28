@@ -1,5 +1,6 @@
 
 using MediatR;
+using ShortLink.Application.Common;
 using ShortLink.Application.Services;
 using ShortLink.Domain.Interfaces.UnitOfWork;
 
@@ -18,7 +19,7 @@ public class DeleteHandler : IRequestHandler<DeleteCommand, bool>
     {
         var url = await _unitOfWork.ShortUrls.GetByIdForUserAsync(request.UrlId, request.UserId);
         if (url is null)
-            return false;
+            throw new NotFoundException($"The Link with ID '{request.UrlId}' was not found.");
 
         url.IsActive = false;
 

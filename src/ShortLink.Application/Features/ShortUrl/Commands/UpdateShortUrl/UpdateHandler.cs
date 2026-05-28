@@ -1,5 +1,6 @@
 
 using MediatR;
+using ShortLink.Application.Common;
 using ShortLink.Application.Services;
 using ShortLink.Domain.Interfaces.UnitOfWork;
 
@@ -19,7 +20,8 @@ public class UpdateHandler : IRequestHandler<UpdateCommand, bool>
         var url = await _unitOfWork.ShortUrls.GetByIdForUserAsync(request.UrlId, request.UserId);
 
         if (url is null)
-            return false;
+            throw new NotFoundException($"The link with ID '{request.UrlId}' was not found.");
+
 
         url.OriginalLink = request.Url;
 
