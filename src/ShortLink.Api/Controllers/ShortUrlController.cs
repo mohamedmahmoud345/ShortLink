@@ -8,10 +8,12 @@ using ShortLink.Api.DTOs.ShortUrl;
 using ShortLink.Application.Features.Admin.Queries.GetAllUsers;
 using ShortLink.Application.Features.ShortUrl.Commands.CreateShortUrl;
 using ShortLink.Application.Features.ShortUrl.Commands.DeleteUrl;
+using ShortLink.Application.Features.ShortUrl.Commands.RefreshLink;
 using ShortLink.Application.Features.ShortUrl.Commands.UpdateShortUrl;
 using ShortLink.Application.Features.ShortUrl.Queries.GetAllByUserId;
 using ShortLink.Application.Features.ShortUrl.Queries.GetById;
 using ShortLink.Application.Features.ShortUrl.Queries.GetByShortCode;
+using ShortLink.Application.Features.ShortUrl.Queries.GetInactiveLinks;
 
 namespace ShortLink.Api.Controllers
 {
@@ -48,20 +50,15 @@ namespace ShortLink.Api.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetById(string id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            if (!Guid.TryParse(id, out Guid result))
-                return BadRequest();
-
-            var query = new GetByIdQuery(result);
+            var query = new GetByIdQuery(id);
             var res = await _mediator.Send(query);
-            if (res is null)
-                return NotFound();
-
+            
             return Ok(res);
         }
 
-        [HttpGet]
+        [HttpGet("mine")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllByUserId()
@@ -101,35 +98,34 @@ namespace ShortLink.Api.Controllers
             return Ok(res);
         }
 
-        [HttpGet("url/{shortCode}")]
+        [HttpGet("{shortCode}/url")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByShortCode([FromRoute] string shortCode)
         {
             var query = new GetByShortCodeQuery(shortCode);
             var res = await _mediator.Send(query);
-            if (res is null)
-                return NotFound();
+            
 
             return Ok(res);
         }
 
-        [HttpPut]
+        [HttpPut("{urlId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(UpdateDto updateDto)
+        public async Task<IActionResult> Update(Guid urlId, [FromBody] string url)
         {
             var userId = GetUserId();
             if (userId == Guid.Empty)
                 return Unauthorized();
-            var command = new UpdateCommand(updateDto.Id, userId, updateDto.Url);
+            var command = new UpdateCommand(urlId, userId, url);
             var res = await _mediator.Send(command);
             if (res == false)
-                return NotFound();
+                return BadRequest();
 
             return NoContent();
         }
-        
+
         [HttpDelete("{urlId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -140,11 +136,40 @@ namespace ShortLink.Api.Controllers
                 return Unauthorized();
 
             var command = new DeleteCommand(urlId, userId);
-            var res = await _mediator.Send(command);
+            var res =await _mediator.Send(command);
             if (res == false)
-                return NotFound();
+                return BadRequest();
 
             return NoContent();
+        }
+
+        [HttpPost("{urlId}/refresh")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> RefreshLink(Guid urlId)
+        {
+            var userId = GetUserId();
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var result = await _mediator.Send(new RefreshLinkCommand(userId, urlId));
+            if (result == false)
+                return BadRequest("Only expired links can be refreshed.");
+
+            return NoContent();
+        }
+        [HttpGet("inactive")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetInactiveLinks()
+        {
+            var userId = GetUserId();
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var result = await _mediator.Send(new GetInactiveLinksQuery(userId));
+
+            return Ok(result);
         }
         private Guid GetUserId()
         {
