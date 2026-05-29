@@ -16,7 +16,8 @@ public class RefreshLinkHandler : IRequestHandler<RefreshLinkCommand, bool>
 
     public async Task<bool> Handle(RefreshLinkCommand request, CancellationToken cancellationToken)
     {
-        var url = await _unitOfWork.ShortUrls.GetByIdForUserAsync(request.UrlId, request.UserId);
+        var url = await _unitOfWork.ShortUrls.GetInactiveLinkByIdAsync(request.UrlId);
+
         if (url is null)
             throw new NotFoundException($"The link with ID '{request.UrlId}' was not found.");
 
