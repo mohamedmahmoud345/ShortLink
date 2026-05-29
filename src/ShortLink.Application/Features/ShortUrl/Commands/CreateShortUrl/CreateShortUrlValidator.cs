@@ -8,7 +8,7 @@ public class CreateShortUrlValidator : AbstractValidator<CreateShortUrlCommand>
     public CreateShortUrlValidator()
     {
         RuleFor(x => x.OriginalLink)
-            .NotEmpty().WithMessage("Url is requered");
+            .NotEmpty().WithMessage("Url is required");
 
     }
 }
