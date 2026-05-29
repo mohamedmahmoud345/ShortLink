@@ -54,7 +54,7 @@ public class ClickEventRepository : IClickEventRepository
         return await connection.QueryAsync<CountryStats>(query, new { urlId });
     }
 
-    public async Task<IEnumerable<DailyClickStats>> GetDailyClicksAsync(Guid urlId, int days)
+    public async Task<IEnumerable<DailyClickStats>> GetDailyClicksAsync(Guid urlId, DateTime startDate)
     {
         using var connection = _dapperContext.CreateConnection();
         var query = @"
@@ -65,7 +65,7 @@ public class ClickEventRepository : IClickEventRepository
             ORDER BY Date DESC
         ";
 
-        return await connection.QueryAsync<DailyClickStats>(query, new { urlId, StartDate = DateTime.Now.AddDays(-days) });
+        return await connection.QueryAsync<DailyClickStats>(query, new { urlId, StartDate = startDate });
     }
 
     public async Task<IEnumerable<DeviceStats>> GetDeviceStatsAsync(Guid urlId)

@@ -21,7 +21,10 @@
     <Folder Include="Features\ClickEvent\Commands\RecordClickEvent\" />
     <Folder Include="Features\ClickEvent\Queries\" />
     <Folder Include="Features\ClickEvent\Queries\GetByUrlId\" />
+    <Folder Include="Features\ClickEvent\Queries\GetCountryStats\" />
     <Folder Include="Features\ClickEvent\Queries\GetDailyClicks\" />
+    <Folder Include="Features\ClickEvent\Queries\GetDeviceStats\" />
+    <Folder Include="Features\ClickEvent\Queries\GetTopReferrers\" />
     <Folder Include="Features\ShortUrl\Commands\CreateShortUrl\GenerateCode\" />
     <Folder Include="Features\ShortUrl\Commands\DeleteUrl\" />
     <Folder Include="Features\ShortUrl\Commands\RefreshLink\" />
