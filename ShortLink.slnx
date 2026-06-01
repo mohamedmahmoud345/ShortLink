@@ -5,4 +5,7 @@
     <Project Path="src/ShortLink.Domain/ShortLink.Domain.csproj" />
     <Project Path="src/ShortLink.Infrastructure/ShortLink.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/ShortLink.IntegrationTests/ShortLink.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

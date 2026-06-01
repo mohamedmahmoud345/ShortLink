@@ -9,11 +9,11 @@ public class GetDailyClicksQuery : IRequest<List<GetDailyClicksResponse>>
     {
         UserId = userId;
         UrlId = urlId;
-        Date = date;
+        Date = date ?? DateTime.Today;
     }
 
     public Guid UserId { get; set; }
     public Guid UrlId { get; set; }
-    public DateTime? Date { get; set; } = DateTime.Today;
+    public DateTime Date { get; set; }
 
 }

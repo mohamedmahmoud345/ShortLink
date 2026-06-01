@@ -18,7 +18,7 @@ public class GetDailyClicksHanlder : IRequestHandler<GetDailyClicksQuery, List<G
         if (isExists == null)
             throw new NotFoundException($"The short URL with ID '{request.UrlId}' was not found.");
 
-        var dailyClicks = await _unitOfWork.ClickEvents.GetDailyClicksAsync(request.UrlId, request.Date.Value);
+        var dailyClicks = await _unitOfWork.ClickEvents.GetDailyClicksAsync(request.UrlId, request.Date);
         var result = dailyClicks.Select(x => new GetDailyClicksResponse()
         {
             Count = x.Count,
