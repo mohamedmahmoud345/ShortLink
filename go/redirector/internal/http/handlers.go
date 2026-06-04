@@ -15,17 +15,63 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type CacheReader interface {
+	Get(ctx context.Context, key string) (string, error)
+}
+type CacheWriter interface {
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
+}
+type LinkFinder interface {
+	FindActiveLink(ctx context.Context, shortCode string) (originalUrl string, expiresAt *time.Time, err error)
+}
+
+
 type Handler struct {
-	DB *sql.DB
-	Cache *cache.Cache
+	linkFinder LinkFinder
+	cacheReader CacheReader
+	cacheWriter CacheWriter
+}
+type sqlLinkFinder struct {
+	db *sql.DB
 }
 
 func NewHandler(db *sql.DB, cache *cache.Cache) *Handler {
-	return &Handler{
-		DB: db,
-		Cache: cache,
-	}
+    return &Handler{
+        linkFinder:  &sqlLinkFinder{db: db},
+        cacheReader: &redisCacheReader{client: cache.Client},
+        cacheWriter: &redisCacheWriter{client: cache.Client},
+    }
 }
+
+
+func (s *sqlLinkFinder) FindActiveLink(ctx context.Context, shortCode string) (string, *time.Time, error) {
+    var dbURL string
+    var expiresAt sql.NullTime
+    query := "SELECT OriginalLink, ExpiresAt FROM ShortUrls WHERE ShortCode = @ShortCode AND IsActive = 1"
+    err := s.db.QueryRowContext(ctx, query, sql.Named("ShortCode", shortCode)).Scan(&dbURL, &expiresAt)
+    if err != nil {
+        return "", nil, err
+    }
+    if expiresAt.Valid {
+        return dbURL, &expiresAt.Time, nil
+    }
+    return dbURL, nil, nil
+}
+
+type redisCacheReader struct {
+    client *redis.Client
+}
+func (r *redisCacheReader) Get(ctx context.Context, key string) (string, error) {
+    return r.client.Get(ctx, key).Result()
+}
+
+type redisCacheWriter struct {
+    client *redis.Client
+}
+func (r *redisCacheWriter) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+    return r.client.Set(ctx, key, value, expiration).Err()
+}
+
 
 func (h *Handler) HandleHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -40,7 +86,7 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
 	start := time.Now()
 
 	// check redis (cache hit?)
-	originalUrl, err := h.Cache.Client.Get(ctx, cacheKey).Result()
+	originalUrl, err := h.cacheReader.Get(ctx, cacheKey)
 	if err == nil {
  		elapsed := time.Since(start)
         log.Printf("redirect cache_hit shortCode=%s duration_ms=%d ip=%s", shortCode, elapsed.Milliseconds(), clientIP(r))
@@ -60,13 +106,9 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
 	}
 
 	// cache miss 
-	var dbURL string
-	var expiresAt sql.NullTime
-
 	dbStart := time.Now()
 
-	query := "SELECT OriginalLink, ExpiresAt FROM ShortUrls WHERE ShortCode = @ShortCode AND IsActive = 1"
-	err = h.DB.QueryRowContext(ctx, query, sql.Named("ShortCode", shortCode)).Scan(&dbURL, &expiresAt)
+	dbURL, expiresAt, err := h.linkFinder.FindActiveLink(ctx, shortCode)
 	dbElapsed := time.Since(dbStart)
 
 	if err != nil {
@@ -83,15 +125,15 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
 	var ttl time.Duration
 	maxTTL := 24 * time.Hour
 
-	if expiresAt.Valid {
+	if expiresAt != nil {
 		now := time.Now()
-		if now.After(expiresAt.Time){
-			log.Printf("redirect expired shortCode=%s expiresAt=%s", shortCode, expiresAt.Time)
+		if now.After(*expiresAt){
+			log.Printf("redirect expired shortCode=%s expiresAt=%s", shortCode, *expiresAt)
 			http.NotFound(w, r)
 			return
 		}
 
-		ttl = time.Until(expiresAt.Time)
+		ttl = time.Until(*expiresAt)
 		if ttl > maxTTL {
 			ttl = maxTTL
 		}
@@ -102,7 +144,7 @@ func (h *Handler) HandleRedirect(w http.ResponseWriter, r *http.Request){
 	go func()  {
 		backgroundCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
-		_ = h.Cache.Client.Set(backgroundCtx, cacheKey, dbURL, ttl).Err()
+		_ = h.cacheWriter.Set(backgroundCtx, cacheKey, dbURL, ttl)
 	}()
 
 	payload := analytics.ClickPayload{
