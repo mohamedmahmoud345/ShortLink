@@ -1,0 +1,7 @@
+bin/
+obj/
+.git/
+.vs/
+go/
+Tests/
+node_modules/

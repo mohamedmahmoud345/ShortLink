@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+COPY ["src/ShortLink.Infrastructure/ShortLink.Infrastructure.csproj", "ShortLink.Infrastructure/"]
+COPY ["src/ShortLink.Domain/ShortLink.Domain.csproj", "ShortLink.Domain/"]
+COPY ["src/ShortLink.Application/ShortLink.Application.csproj", "ShortLink.Application/"]
+COPY ["src/ShortLink.Api/ShortLink.Api.csproj", "ShortLink.Api/"]
+RUN dotnet restore "ShortLink.Api/ShortLink.Api.csproj"
+
+COPY src/ .
+RUN dotnet publish "ShortLink.Api/ShortLink.Api.csproj" -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+ENTRYPOINT [ "dotnet", "ShortLink.Api.dll" ]

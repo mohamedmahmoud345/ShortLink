@@ -1,0 +1,19 @@
+FROM golang:1.26-alpine AS build
+WORKDIR /app
+
+# Copy dependency files and download them
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code and build a statically linked binary
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /shortlink-redirector ./cmd/redirector/
+
+# STAGE 2: Create a microscopic runtime image using alpine or scratch
+FROM alpine:3.19
+WORKDIR /
+
+COPY --from=build /shortlink-redirector /shortlink-redirector
+EXPOSE 8080
+
+ENTRYPOINT ["/shortlink-redirector"]

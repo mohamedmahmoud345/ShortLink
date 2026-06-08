@@ -1,0 +1,58 @@
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong!Pass123"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  shortlink-api:
+    build:
+      context: .
+      dockerfile: src/dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_URLS: "http://+:5000"
+      ConnectionStrings__conStr: "Server=sqlserver,1433;Database=ShortLink;User Id=sa;Password=YourStrong!Pass123;Encrypt=False;TrustServerCertificate=True"
+      ConnectionStrings__RedisConnection: "redis:6379"
+      Jwt__SecretKey: "change-this-to-a-real-secret-key-in-production"
+      Jwt__Issuer: "ShortLink"
+      Jwt__Audience: "ShortLink"
+      SeedAdmin__Email: "admin@shortlink.com"
+      SeedAdmin__Password: "SecureAdminPass123!"
+      INTERNAL_SECURE_TOKEN: "my-secure-internal-token"
+    depends_on:
+      - sqlserver
+      - redis
+
+  redirector:
+    build:
+      context: ./go/redirector
+      dockerfile: dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      CON_STR: "sqlserver://sa:YourStrong!Pass123@sqlserver:1433?database=ShortLink&encrypt=disable"
+      REDIS_ADDRESS: "redis:6379"
+      REDIS_PASSWORD: ""
+      INTERNAL_SECURE_TOKEN: "my-secure-internal-token"
+      CS_API_URL: "http://shortlink-api:5000/api/clickevent"
+    depends_on:
+      - redis
+      - shortlink-api
+
+
+volumes:
+  sqlserver-data:
