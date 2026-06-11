@@ -1,26 +1,38 @@
-name: My First CI Pipeline
+name: Dotnet CI
 
 on: 
     push: 
-        branches:
+        branches: 
             - main
+        paths: 
+            - 'src/**'
     pull_request: 
         branches: 
             - main
+        paths: 
+            - 'src/**'
 
 jobs:
-    build-and-test:
+    build-and-test-dotnet:
+        name: Build & Test .NET App
         runs-on: ubuntu-latest
 
+        defaults:
+            run:
+                working-directory: ./src
         steps:
-            - name: Step 1 - check out repository code
+            - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Step 2 - Print a status message
-              run: echo "The code has been successfully cloned. starting verfication..."
-            
-            - name: Step 3 - Check environment tools
-              run: |
-                  echo "Checking pre-installed software on this ubuntu runner."
-                  node --version 
-                  git --version
+            - name: Setup .NET SDK
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: '9.0.x'
+
+            - name: Resotre dependencies
+              run: dotnet Resotre
+            - name: Build application
+              run: dotnet build --configuration release --no-Resotre
+            - name: Run automated tests
+              run: dotnet test --configuration Release --no-Resotre --no-build
+              
