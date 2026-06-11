@@ -1,0 +1,43 @@
+name: Go Redirect - CI
+run-name: Go CI triggered by @${{ github.actor }}
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'go/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'go/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-test-go:
+    name: Build & Test Go App
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./go/redirector
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26' # Match your current go.mod version
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build Go application
+        run: go build -v ./...
+
+      - name: Run Go tests
+        run: go test -v ./...
+  
+        
+    
