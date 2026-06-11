@@ -1,0 +1,26 @@
+name: My First CI Pipeline
+
+on: 
+    push: 
+        branches:
+            - main
+    pull_request: 
+        branches: 
+            - main
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Step 1 - check out repository code
+              uses: actions/checkout@v4
+
+            - name: Step 2 - Print a status message
+              run: echo "The code has been successfully cloned. starting verfication..."
+            
+            - name: Step 3 - Check environment tools
+              run: |
+                  echo "Checking pre-installed software on this ubuntu runner."
+                  node --version 
+                  git --version
