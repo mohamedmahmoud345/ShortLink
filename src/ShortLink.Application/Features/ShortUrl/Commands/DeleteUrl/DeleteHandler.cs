@@ -25,7 +25,12 @@ public class DeleteHandler : IRequestHandler<DeleteCommand, bool>
 
         await _unitOfWork.ShortUrls.UpdateAsync(url);
         var key = $"link:{url.ShortCode}";
-        await _cache.RemoveAsync(key);
+
+        try
+        {
+            await _cache.RemoveAsync(key);
+        }
+        catch { }
 
         return true;
     }
