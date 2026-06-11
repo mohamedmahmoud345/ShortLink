@@ -15,8 +15,8 @@ using ShortLink.Application.Features.ClickEvent.Queries.GetTopReferrers;
 
 namespace ShortLink.Api.Controllers
 {
-    // [EnableRateLimiting("PerUserPolicy")]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class ClickEventController : ControllerBase
     {

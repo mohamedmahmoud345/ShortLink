@@ -8,7 +8,8 @@ using ShortLink.Application.Features.Account.Register;
 
 namespace ShortLink.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {

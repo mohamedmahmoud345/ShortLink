@@ -17,9 +17,10 @@ using ShortLink.Application.Features.ShortUrl.Queries.GetInactiveLinks;
 
 namespace ShortLink.Api.Controllers
 {
+    [ApiVersion("1.0")]
     [Authorize]
     [EnableRateLimiting("PerUserPolicy")]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class ShortUrlController : ControllerBase
     {
