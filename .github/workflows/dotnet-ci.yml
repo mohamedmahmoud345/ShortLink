@@ -1,38 +1,43 @@
-name: Dotnet CI
+name: Dotnet - CI
+run-name: .NET CI triggered by @${{ github.actor }}
 
-on: 
-    push: 
-        branches: 
-            - main
-        paths: 
-            - 'src/**'
-    pull_request: 
-        branches: 
-            - main
-        paths: 
-            - 'src/**'
+on:
+  push:
+    branches: [ "main" ]
+    # PATH FILTERING: Trigger only if changes happen in C# code folders
+    paths:
+      - 'src/**'
+      - 'Tests/**'
+      - 'ShortLink.slnx'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'Tests/**'
+      - 'ShortLink.slnx'
+  
+  # Allows you to click a manual button on GitHub to test it immediately!
+  workflow_dispatch: 
 
 jobs:
-    build-and-test-dotnet:
-        name: Build & Test .NET App
-        runs-on: ubuntu-latest
+  build-and-test-dotnet:
+    name: Build & Test .NET App
+    runs-on: ubuntu-latest
 
-        defaults:
-            run:
-                working-directory: ./src
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Setup .NET SDK
-              uses: actions/setup-dotnet@v4
-              with:
-                  dotnet-version: '9.0.x'
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x' # Change this if you are using .NET 9.0
 
-            - name: Resotre dependencies
-              run: dotnet Resotre
-            - name: Build application
-              run: dotnet build --configuration release --no-Resotre
-            - name: Run automated tests
-              run: dotnet test --configuration Release --no-Resotre --no-build
-              
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build application
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run automated tests
+        run: dotnet test --configuration Release --no-restore --no-build
