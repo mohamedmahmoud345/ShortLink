@@ -25,7 +25,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var email = $"{userName}@test.com";
         var request = new RegisterRequestDto(userName, email, "SecurePass123!");
 
-        var response = await _client.PostAsJsonAsync("/api/account/register", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
@@ -41,10 +41,10 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var email = $"{userName}@test.com";
         var request = new RegisterRequestDto(userName, email, "SecurePass123!");
 
-        var firstResponse = await _client.PostAsJsonAsync("/api/account/register", request);
+        var firstResponse = await _client.PostAsJsonAsync("/api/v1/account/register", request);
         firstResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.PostAsJsonAsync("/api/account/register", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -55,7 +55,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var email = $"test{Guid.NewGuid():N}@test.com";
         var request = new RegisterRequestDto("", email, "SecurePass123!");
 
-        var response = await _client.PostAsJsonAsync("/api/account/register", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
     }
@@ -66,7 +66,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var email = $"test{Guid.NewGuid():N}@test.com";
         var request = new RegisterRequestDto("name", email, "");
 
-        var response = await _client.PostAsJsonAsync("/api/account/register", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
     }
@@ -78,7 +78,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var email = $"{userName}@test.com";
         var request = new RegisterRequestDto(userName, email, "abcdef");
 
-        var response = await _client.PostAsJsonAsync("/api/account/register", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
     }
@@ -90,7 +90,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var email = $"{userName}@test.com";
         var request = new RegisterRequestDto(userName, email, "Ab1");
 
-        var response = await _client.PostAsJsonAsync("/api/account/register", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
     }
@@ -103,10 +103,10 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var userName = $"user{Guid.NewGuid():N}";
         var email = $"{userName}@test.com";
         var registerRequest = new RegisterRequestDto(userName, email, "SecurePass123!");
-        await _client.PostAsJsonAsync("/api/account/register", registerRequest);
+        await _client.PostAsJsonAsync("/api/v1/account/register", registerRequest);
 
         var loginRequest = new LoginRequestDto(email, "SecurePass123!");
-        var response = await _client.PostAsJsonAsync("/api/account/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
@@ -121,10 +121,10 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var userName = $"user{Guid.NewGuid():N}";
         var email = $"{userName}@test.com";
         var registerRequest = new RegisterRequestDto(userName, email, "SecurePass123!");
-        await _client.PostAsJsonAsync("/api/account/register", registerRequest);
+        await _client.PostAsJsonAsync("/api/v1/account/register", registerRequest);
 
         var loginRequest = new LoginRequestDto(email, "WrongPassword1!");
-        var response = await _client.PostAsJsonAsync("/api/account/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -133,7 +133,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
     public async Task Login_NonExistentEmail_Returns401()
     {
         var loginRequest = new LoginRequestDto($"nonexistent{Guid.NewGuid():N}@test.com", "SecurePass123!");
-        var response = await _client.PostAsJsonAsync("/api/account/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -142,7 +142,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
     public async Task Login_EmptyEmail_Returns401()
     {
         var loginRequest = new LoginRequestDto("", "SecurePass123!");
-        var response = await _client.PostAsJsonAsync("/api/account/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -151,7 +151,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
     public async Task Login_EmptyPassword_Returns401()
     {
         var loginRequest = new LoginRequestDto($"test{Guid.NewGuid():N}@test.com", "");
-        var response = await _client.PostAsJsonAsync("/api/account/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -160,7 +160,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
     public async Task Login_InvalidEmailFormat_Returns401()
     {
         var loginRequest = new LoginRequestDto("bad", "SecurePass123!");
-        var response = await _client.PostAsJsonAsync("/api/account/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -174,7 +174,7 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
         var email = $"{userName}@test.com";
         var request = new RegisterRequestDto(userName, email, "SecurePass123!");
 
-        var response = await _client.PostAsJsonAsync("/api/account/register", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();

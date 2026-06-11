@@ -34,7 +34,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         SetAuthHeader(token);
 
         var dto = new CreateUrlDto("https://example.com");
-        var response = await _client.PostAsJsonAsync("/api/shorturl", dto);
+        var response = await _client.PostAsJsonAsync("/api/v1/shorturl", dto);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var result = await response.Content.ReadFromJsonAsync<CreateShortUrlResponse>();
@@ -49,7 +49,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
     public async Task Create_WithoutAuth_Returns401()
     {
         var dto = new CreateUrlDto("https://example.com");
-        var response = await _client.PostAsJsonAsync("/api/shorturl", dto);
+        var response = await _client.PostAsJsonAsync("/api/v1/shorturl", dto);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -61,7 +61,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         SetAuthHeader(token);
 
         var dto = new CreateUrlDto("");
-        var response = await _client.PostAsJsonAsync("/api/shorturl", dto);
+        var response = await _client.PostAsJsonAsync("/api/v1/shorturl", dto);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -75,7 +75,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         SetAuthHeader(token);
 
         var created = await CreateShortUrlAsync("https://example.com");
-        var response = await _client.GetAsync($"/api/shorturl/{created.Id}");
+        var response = await _client.GetAsync($"/api/v1/shorturl/{created.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<QueryResponse>();
@@ -91,7 +91,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.GetAsync($"/api/shorturl/{Guid.NewGuid()}");
+        var response = await _client.GetAsync($"/api/v1/shorturl/{Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -105,7 +105,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         SetAuthHeader(token);
 
         var created = await CreateShortUrlAsync("https://example.com");
-        var response = await _client.GetAsync($"/api/shorturl/{created.ShortCode}/url");
+        var response = await _client.GetAsync($"/api/v1/shorturl/{created.ShortCode}/url");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<QueryResponse>();
@@ -120,7 +120,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.GetAsync("/api/shorturl/NONEXISTENT/url");
+        var response = await _client.GetAsync("/api/v1/shorturl/NONEXISTENT/url");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -136,7 +136,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         await CreateShortUrlAsync("https://example.com");
         await CreateShortUrlAsync("https://test.com");
 
-        var response = await _client.GetAsync("/api/shorturl/mine");
+        var response = await _client.GetAsync("/api/v1/shorturl/mine");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var results = await response.Content.ReadFromJsonAsync<List<QueryResponse>>();
@@ -150,7 +150,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.GetAsync("/api/shorturl/mine");
+        var response = await _client.GetAsync("/api/v1/shorturl/mine");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var results = await response.Content.ReadFromJsonAsync<List<QueryResponse>>();
@@ -168,7 +168,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
 
         var created = await CreateShortUrlAsync("https://example.com");
         var content = new StringContent("\"https://updated-url.com\"", Encoding.UTF8, "application/json");
-        var response = await _client.PutAsync($"/api/shorturl/{created.Id}", content);
+        var response = await _client.PutAsync($"/api/v1/shorturl/{created.Id}", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent); 
     }
@@ -180,7 +180,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         SetAuthHeader(token);
 
         var content = new StringContent("\"https://updated-url.com\"", Encoding.UTF8, "application/json");
-        var response = await _client.PutAsync($"/api/shorturl/{Guid.NewGuid()}", content);
+        var response = await _client.PutAsync($"/api/v1/shorturl/{Guid.NewGuid()}", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -195,7 +195,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var tokenB = await GetTokenAsync();
         SetAuthHeader(tokenB);
         var content = new StringContent("\"https://updated-url.com\"", Encoding.UTF8, "application/json");
-        var response = await _client.PutAsync($"/api/shorturl/{created.Id}", content);
+        var response = await _client.PutAsync($"/api/v1/shorturl/{created.Id}", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -209,7 +209,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         SetAuthHeader(token);
 
         var created = await CreateShortUrlAsync("https://example.com");
-        var response = await _client.DeleteAsync($"/api/shorturl/{created.Id}");
+        var response = await _client.DeleteAsync($"/api/v1/shorturl/{created.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -220,7 +220,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.DeleteAsync($"/api/shorturl/{Guid.NewGuid()}");
+        var response = await _client.DeleteAsync($"/api/v1/shorturl/{Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -234,7 +234,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
 
         var tokenB = await GetTokenAsync();
         SetAuthHeader(tokenB);
-        var response = await _client.DeleteAsync($"/api/shorturl/{created.Id}");
+        var response = await _client.DeleteAsync($"/api/v1/shorturl/{created.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -258,7 +258,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
             await db.SaveChangesAsync();            
         }
 
-        var response = await _client.PostAsync($"/api/shorturl/{created.Id}/refresh", null);
+        var response = await _client.PostAsync($"/api/v1/shorturl/{created.Id}/refresh", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -280,7 +280,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
             await db.SaveChangesAsync();
         }
 
-        var response = await _client.PostAsync($"/api/shorturl/{created.Id}/refresh", null);
+        var response = await _client.PostAsync($"/api/v1/shorturl/{created.Id}/refresh", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -291,7 +291,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.PostAsync($"/api/shorturl/{Guid.NewGuid()}/refresh", null);
+        var response = await _client.PostAsync($"/api/v1/shorturl/{Guid.NewGuid()}/refresh", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -306,9 +306,9 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
 
         var created = await CreateShortUrlAsync("https://example.com");
 
-        await _client.DeleteAsync($"/api/shorturl/{created.Id}");
+        await _client.DeleteAsync($"/api/v1/shorturl/{created.Id}");
 
-        var response = await _client.GetAsync("/api/shorturl/inactive");
+        var response = await _client.GetAsync("/api/v1/shorturl/inactive");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var results = await response.Content.ReadFromJsonAsync<List<QueryResponse>>();
@@ -322,7 +322,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.GetAsync("/api/shorturl/inactive");
+        var response = await _client.GetAsync("/api/v1/shorturl/inactive");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var results = await response.Content.ReadFromJsonAsync<List<QueryResponse>>();
@@ -338,7 +338,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.GetAsync("/api/shorturl/admin/users");
+        var response = await _client.GetAsync("/api/v1/shorturl/admin/users");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -349,7 +349,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.GetAsync($"/api/shorturl/admin/user/{Guid.NewGuid()}/urls");
+        var response = await _client.GetAsync($"/api/v1/shorturl/admin/user/{Guid.NewGuid()}/urls");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -360,7 +360,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetAdminTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.GetAsync("/api/shorturl/admin/users");
+        var response = await _client.GetAsync("/api/v1/shorturl/admin/users");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -376,7 +376,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var adminToken = await GetAdminTokenAsync();
         SetAuthHeader(adminToken);
 
-        var response = await _client.GetAsync($"/api/shorturl/admin/user/{regularUserId}/urls");
+        var response = await _client.GetAsync($"/api/v1/shorturl/admin/user/{regularUserId}/urls");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var results = await response.Content.ReadFromJsonAsync<List<QueryResponse>>();
@@ -390,7 +390,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var token = await GetAdminTokenAsync();
         SetAuthHeader(token);
 
-        var response = await _client.GetAsync("/api/shorturl/admin/user/not-a-guid/urls");
+        var response = await _client.GetAsync("/api/v1/shorturl/admin/user/not-a-guid/urls");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -402,7 +402,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var userName = $"user{Guid.NewGuid():N}";
         var email = $"{userName}@test.com";
         var registerRequest = new RegisterRequestDto(userName, email, "SecurePass123!");
-        var response = await _client.PostAsJsonAsync("/api/account/register", registerRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/register", registerRequest);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
         return authResponse!.Token;
@@ -411,7 +411,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
     private async Task<string> GetAdminTokenAsync()
     {
         var loginRequest = new LoginRequestDto("admin@shortlink.com", "SecureAdminPass123!");
-        var response = await _client.PostAsJsonAsync("/api/account/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
         return authResponse!.Token;
@@ -426,7 +426,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
     private async Task<CreateShortUrlResponse> CreateShortUrlAsync(string url)
     {
         var dto = new CreateUrlDto(url);
-        var response = await _client.PostAsJsonAsync("/api/shorturl", dto);
+        var response = await _client.PostAsJsonAsync("/api/v1/shorturl", dto);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         return (await response.Content.ReadFromJsonAsync<CreateShortUrlResponse>())!;
     }
