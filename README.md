@@ -28,15 +28,13 @@ sequenceDiagram
     participant Go
     participant Cache
     participant Database
-
+    User->>Go: GET /abc123
     alt Cache Hit
-        User->>Go: GET /abc123
         Go->>Cache: GET link:abc123
         Cache-->>Go: https://example.com
         Go-->>User: 302 Redirect
         Go->>Go: Log click (async)
     else Cache Miss
-        User->>Go: GET /abc123
         Go->>Cache: GET link:abc123
         Cache-->>Go: miss
         Go->>Database: SELECT OriginalLink
