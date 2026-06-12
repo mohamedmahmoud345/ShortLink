@@ -77,6 +77,32 @@ sequenceDiagram
 
 ---
 
+## Why This Architecture?
+
+### Why two services instead of one?
+
+The redirect hot path and the admin API have fundamentally different requirements. The redirector needs to handle high traffic with sub-50ms latency — it does one thing: look up a short code and redirect. Adding authentication middleware, validation pipelines, and admin logic to the same process would add overhead to every single redirect request.
+
+Splitting them keeps the redirector lean, while the C# API can be as rich as needed with zero performance impact on the public path.
+
+### Why Go for the redirector?
+
+Go's concurrency model is a natural fit. The async analytics pipeline — capturing click events without blocking the redirect response — is exactly what goroutines handle well. Go also starts fast, has a tiny memory footprint per request, and compiles to a single static binary, making the Docker image ~15MB.
+
+### Why C# for the admin API?
+
+The admin side is where complexity lives: authentication, authorization, ownership rules, validation pipelines, analytics queries. ASP.NET Core's ecosystem (MediatR, FluentValidation, EF Core, Identity) handles this cleanly. Clean Architecture and CQRS make sense here because the domain has real business rules worth isolating. Building this in Go would mean recreating that infrastructure from scratch.
+
+### Why cache-aside instead of write-through?
+
+Write-through would require the C# API to populate Redis on every link mutation, coupling the services more tightly. Cache-aside keeps the redirector self-sufficient — it populates its own cache on miss, and the admin API only needs to invalidate on change. A cold Redis instance recovers naturally under real traffic with no manual warming step.
+
+### Why a shared database?
+
+The redirector reads directly from SQL Server on a cache miss rather than calling the C# API. This eliminates an extra network hop on the hot path and removes the admin API as a runtime dependency for the redirector. A single source of truth also avoids the dual-write consistency problems that come with separate databases.
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
