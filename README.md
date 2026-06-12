@@ -2,27 +2,79 @@
 
 A distributed URL shortener built with a **dual-stack architecture**: an **ASP.NET Core 9** admin API (Clean Architecture + CQRS with MediatR) for secure link management and analytics, and a **Go** redirector optimized for low-latency public redirects with Redis caching.
 
+## Architecture
+
+### System Overview
+
+```mermaid
+graph LR
+    U["User"] -->|"manage links"| C["C# Admin API<br/>(:5000)"]
+    U -->|"redirect"| G["Go Redirector<br/>(:8080)"]
+
+    subgraph Docker Compose
+        C --> S[("SQL Server<br/>source of truth")]
+        C -->|"invalidate cache"| R[("Redis<br/>cache-aside")]
+        G -->|"cache hit"| R
+        G -->|"cache miss"| S
+        G -->|"write cache"| R
+    end
 ```
-                    ┌──────────────────────────────────────────────┐
-                    │              Docker Compose                  │
-                    │                                              │
-  ┌──────┐         ┌───────────────┐         ┌──────────────┐     │
-  │ User │────────▶│  Go Redirector │────────▶  Redis Cache   │     │
-  │      │         │  (:8080)       │  miss   │  (cache-aside)│     │
-  └──────┘         └───────┬───────┘         └──────────────┘     │
-                           │                                      │
-                           ▼                                      │
-                    ┌───────────────┐                             │
-                    │  SQL Server    │◀────────────────────────────│
-                    │  (source of    │                             │
-                    │   truth)       │                             │
-                    └───────┬───────┘                             │
-                            │                                     │
-  ┌──────┐         ┌───────▼───────┐                             │
-  │User  │────────▶│  C# Admin API │──── cache invalidation ───▶ │
-  │      │         │  (:5000)      │                              │
-  └──────┘         └───────────────┘                              │
-                    └──────────────────────────────────────────────┘
+
+### Redirect Flow (Cache-Aside Pattern)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Go
+    participant Cache
+    participant Database
+
+    alt Cache Hit
+        User->>Go: GET /abc123
+        Go->>Cache: GET link:abc123
+        Cache-->>Go: https://example.com
+        Go-->>User: 302 Redirect
+        Go->>Go: Log click (async)
+    else Cache Miss
+        User->>Go: GET /abc123
+        Go->>Cache: GET link:abc123
+        Cache-->>Go: miss
+        Go->>Database: SELECT OriginalLink
+        Database-->>Go: https://example.com
+        Go->>Cache: SET link:abc123 (TTL)
+        Go-->>User: 302 Redirect
+        Go->>Go: Log click (async)
+    end
+```
+
+### Admin Flow (Link Management)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant API as "C# Admin API"
+    participant Database as "SQL Server"
+    participant Cache
+
+    Note over User,Cache: Create Link
+    User->>API: POST /api/v1/shorturl
+    API->>Database: INSERT ShortUrl
+    Database-->>API: created
+    API-->>User: 201 Created
+
+    Note over User,Cache: Update Link
+    User->>API: PUT /api/v1/shorturl/{id}
+    API->>Database: UPDATE OriginalLink
+    API->>Cache: DEL link:{shortCode}
+    Database-->>API: updated
+    API-->>User: 204 No Content
+
+    Note over User,Cache: Delete Link
+    User->>API: DELETE /api/v1/shorturl/{id}
+    API->>Database: SET IsActive = 0
+    API->>Cache: DEL link:{shortCode}
+    Database-->>API: deactivated
+    API-->>User: 204 No Content
 ```
 
 ---
@@ -51,7 +103,7 @@ A distributed URL shortener built with a **dual-stack architecture**: an **ASP.N
 - **Redis cache invalidation** — link updates/deletes clear the cache key `link:{shortCode}`
 - **Rate limiting** — 60 requests per minute per user (fixed window)
 - **Click analytics** — daily clicks, top referrers, country stats, device stats
-- **API versioning** — query string based (`?api-version=1.0`)
+- **API versioning** — URL path based (`/api/v1/`)
 - **Global exception handling** with ProblemDetails
 - **Auto database migration** on startup via `MigrateAsync()`
 
@@ -88,17 +140,17 @@ docker compose ps
 
 ```bash
 # Register a new user
-curl -X POST http://localhost:5000/api/account/register \
+curl -X POST http://localhost:5000/api/v1/account/register \
   -H "Content-Type: application/json" \
   -d '{"userName":"testuser","email":"test@example.com","password":"SecurePass123!"}'
 
 # Login to get JWT token
-curl -X POST http://localhost:5000/api/account/login \
+curl -X POST http://localhost:5000/api/v1/account/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"SecurePass123!"}'
 
 # Create a short link (use the token from login response)
-curl -X POST http://localhost:5000/api/shorturl \
+curl -X POST http://localhost:5000/api/v1/shorturl \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{"url":"https://example.com"}'
@@ -207,17 +259,6 @@ Two GitHub Actions workflows:
 |---|---|---|
 | **.NET CI** | Changes to `src/`, `Tests/` | `dotnet restore → build → test` (61 tests) |
 | **Go CI** | Changes to `go/` | `go mod download → build → test` (7 tests) |
-
----
-
-## CV-Ready Highlights
-
-- **Polyglot architecture**: C# (Clean Architecture, CQRS) + Go (interfaces, table-driven tests) — demonstrates cross-language backend skills
-- **Distributed systems patterns**: Cache-aside, cache invalidation, graceful degradation, async processing via goroutines
-- **Production-ready testing**: 61 integration tests with real SQL Server + Redis containers, 7 Go unit tests with mocks
-- **Containerized deployment**: Multi-stage Dockerfiles, 4-service Docker Compose, automated DB migrations
-- **Security**: JWT auth, role-based authorization, per-user and per-IP rate limiting, internal token for service-to-service communication
-- **DevOps**: GitHub Actions CI for both .NET and Go
 
 ---
 
