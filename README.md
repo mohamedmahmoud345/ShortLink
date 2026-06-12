@@ -9,11 +9,11 @@ A distributed URL shortener built with a **dual-stack architecture**: an **ASP.N
 ```mermaid
 graph LR
     U["User"] -->|"manage links"| C["C# Admin API (:5000)"]
-    U -->|"redirect"| G["Go Redirector<br/>(:8080)"]
+    U -->|"redirect"| G["Go Redirector (:8080)"]
 
-    subgraph Docker Compose
-        C --> S[("SQL Server<br/>source of truth")]
-        C -->|"invalidate cache"| R[("Redis<br/>cache-aside")]
+    subgraph "Docker Compose"
+        C --> S["SQL Server (source of truth)"]
+        C -->|"invalidate cache"| R["Redis (cache-aside)"]
         G -->|"cache hit"| R
         G -->|"cache miss"| S
         G -->|"write cache"| R
