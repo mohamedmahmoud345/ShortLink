@@ -8,7 +8,7 @@ A distributed URL shortener built with a **dual-stack architecture**: an **ASP.N
 
 ```mermaid
 graph LR
-    U["User"] -->|"manage links"| C["C# Admin API<br/>(:5000)"]
+    U["User"] -->|"manage links"| C["C# Admin API (:5000)"]
     U -->|"redirect"| G["Go Redirector<br/>(:8080)"]
 
     subgraph Docker Compose
