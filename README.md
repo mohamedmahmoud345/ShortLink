@@ -52,8 +52,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User
-    participant API as "C# Admin API"
-    participant Database as "SQL Server"
+    participant API
+    participant Database
     participant Cache
 
     Note over User,Cache: Create Link
