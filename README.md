@@ -103,6 +103,22 @@ The redirector reads directly from SQL Server on a cache miss rather than callin
 
 ---
 
+## Performance
+
+### Go Redirector (10 concurrent VUs, k6 load test)
+
+| Metric | Value |
+|---|---|
+| Throughput | **2,063 req/s** |
+| P50 latency | **4.27 ms** |
+| P95 latency | **7.63 ms** |
+| Max latency | **27.6 ms** |
+| Success rate | **100%** (20,637 / 20,637) |
+
+Tested with 10 concurrent virtual users over 10 seconds against a local Docker Compose deployment (Go redirector → Redis → SQL Server).
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -133,7 +149,7 @@ The redirector reads directly from SQL Server on a cache miss rather than callin
 
 ### Go Redirector
 - **Cache-aside pattern** — checks Redis first, falls back to SQL Server on miss, populates cache
-- **Sub-50ms cache-hit responses** on the redirect hot path
+- **~4ms median redirect latency** (P95 7.6ms at 2,063 req/s)
 - **TTL-bounded caching** — min of link expiration or 24h max
 - **Per-IP rate limiting** — 20 requests per second via tollbooth
 - **Async analytics pipeline** — click events captured via goroutines with zero user-facing latency

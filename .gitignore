@@ -99,3 +99,5 @@ go.work.sum
 # Editor/IDE
 # .idea/
 .vscode/
+
+k6-test.js
