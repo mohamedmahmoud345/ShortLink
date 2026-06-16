@@ -50,25 +50,25 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
-    public async Task Register_EmptyUserName_Returns500()
+    public async Task Register_EmptyUserName_Returns400()
     {
         var email = $"test{Guid.NewGuid():N}@test.com";
         var request = new RegisterRequestDto("", email, "SecurePass123!");
 
         var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task Register_EmptyPassword_Returns500()
+    public async Task Register_EmptyPassword_Returns400()
     {
         var email = $"test{Guid.NewGuid():N}@test.com";
         var request = new RegisterRequestDto("name", email, "");
 
         var response = await _client.PostAsJsonAsync("/api/v1/account/register", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -139,30 +139,30 @@ public class AuthTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
-    public async Task Login_EmptyEmail_Returns401()
+    public async Task Login_EmptyEmail_Returns400()
     {
         var loginRequest = new LoginRequestDto("", "SecurePass123!");
         var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task Login_EmptyPassword_Returns401()
+    public async Task Login_EmptyPassword_Returns400()
     {
         var loginRequest = new LoginRequestDto($"test{Guid.NewGuid():N}@test.com", "");
         var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task Login_InvalidEmailFormat_Returns401()
+    public async Task Login_InvalidEmailFormat_Returns400()
     {
         var loginRequest = new LoginRequestDto("bad", "SecurePass123!");
         var response = await _client.PostAsJsonAsync("/api/v1/account/login", loginRequest);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     // ---- Token Validation ----

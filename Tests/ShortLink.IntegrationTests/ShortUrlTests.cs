@@ -55,7 +55,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
-    public async Task Create_WithEmptyUrl_Returns201()
+    public async Task Create_WithEmptyUrl_Returns400()
     {
         var token = await GetTokenAsync();
         SetAuthHeader(token);
@@ -63,7 +63,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var dto = new CreateUrlDto("");
         var response = await _client.PostAsJsonAsync("/api/v1/shorturl", dto);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     // ---- Get By ID Tests ----

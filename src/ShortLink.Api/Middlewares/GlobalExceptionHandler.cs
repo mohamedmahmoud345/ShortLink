@@ -1,4 +1,5 @@
 
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ShortLink.Application.Common;
@@ -18,6 +19,7 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         var (statusCode, title) = exception switch
         {
+            ValidationException => (StatusCodes.Status400BadRequest, "Validation Error"),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             NotFoundException => (StatusCodes.Status404NotFound, "Not Found"),
             _ => (StatusCodes.Status500InternalServerError, "Server Error")
