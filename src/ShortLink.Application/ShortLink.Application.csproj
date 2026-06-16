@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
+    <Folder Include="Common\Behaviors\" />
     <Folder Include="Dependencies\" />
     <Folder Include="DTOs\" />
     <Folder Include="DTOs\Account\" />
