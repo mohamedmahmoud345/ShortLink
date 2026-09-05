@@ -64,11 +64,11 @@ public class ShortUrlRepository : IShortUrlRepository
     {
         return await _context.ShortUrls.FirstOrDefaultAsync(x => x.Id == linkId && x.UserId == userId);
     }
-    public async Task<ShortUrl?> GetInactiveLinkByIdAsync(Guid id)
+    public async Task<ShortUrl?> GetInactiveLinkByIdAsync(Guid id, Guid userId)
     {
         return await _context.ShortUrls
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.Id == id && x.IsActive == false);
+            .FirstOrDefaultAsync(x => x.Id == id && x.IsActive == false && x.UserId == userId);
     }
 
     public async Task<IEnumerable<ShortUrl>> GetInactiveLinksAsync(Guid userId)
@@ -80,4 +80,3 @@ public class ShortUrlRepository : IShortUrlRepository
             .ToListAsync();
     }
 }
-

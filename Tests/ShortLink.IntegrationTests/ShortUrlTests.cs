@@ -170,7 +170,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var content = new StringContent("\"https://updated-url.com\"", Encoding.UTF8, "application/json");
         var response = await _client.PutAsync($"/api/v1/shorturl/{created.Id}", content);
 
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent); 
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -255,7 +255,7 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
             var url = await db.ShortUrls.FindAsync(created.Id);
             url!.ExpiresAt = DateTime.UtcNow.AddDays(-1);
             url.IsActive = false;
-            await db.SaveChangesAsync();            
+            await db.SaveChangesAsync();
         }
 
         var response = await _client.PostAsync($"/api/v1/shorturl/{created.Id}/refresh", null);
@@ -296,6 +296,31 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task Refresh_OtherUsersLinks_Return404()
+    {
+        var tokenA = await GetTokenAsync();
+        SetAuthHeader(tokenA);
+        var created = await CreateShortUrlAsync("https://example.com");
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var url = await db.ShortUrls.FindAsync(created.Id);
+            url!.ExpiresAt = DateTime.UtcNow.AddDays(-1);
+            url.IsActive = false;
+            await db.SaveChangesAsync();
+        }
+
+        var tokenB = await GetTokenAsync();
+        SetAuthHeader(tokenB);
+        var forbidden = await _client.PostAsync($"/api/v1/shorturl/{created.Id}/refresh", null);
+        forbidden.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        SetAuthHeader(tokenA);
+        var allowed = await _client.PostAsync($"/api/v1/shorturl/{created.Id}/refresh", null);
+        allowed.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
     // ---- Inactive Links Tests ----
 
     [Fact]
