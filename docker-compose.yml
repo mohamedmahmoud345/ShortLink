@@ -48,7 +48,7 @@ services:
       REDIS_ADDRESS: "redis:6379"
       REDIS_PASSWORD: ""
       INTERNAL_SECURE_TOKEN: "my-secure-internal-token"
-      CS_API_URL: "http://shortlink-api:5000/api/clickevent"
+      CS_API_URL: ${CS_API_URL:?required}
     depends_on:
       - redis
       - shortlink-api
