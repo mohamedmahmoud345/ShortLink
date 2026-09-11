@@ -19,7 +19,7 @@ type ClickPayload struct {
 func RecordClick(payload ClickPayload) {
 	// 1. Define the C# internal endpoint
 	// In production, move this to an environment variable or config
-	csApiUrl := "http://localhost:5218/api/clickevent"
+	csApiUrl := os.Getenv("CS_API_URL")
 
 	// 2. Serialize the payload to JSON
 	jsonData, err := json.Marshal(payload)
@@ -55,4 +55,3 @@ func RecordClick(payload ClickPayload) {
 		log.Printf("Analytics: C# API returned status: %d", resp.StatusCode)
 	}
 }
-
