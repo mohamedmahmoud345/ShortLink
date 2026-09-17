@@ -27,7 +27,7 @@ func main() {
 
 	cfg := config.LoadConfig()
 
-	// conect to sql server 
+	// conect to sql server
 	db, err := sql.Open("sqlserver", cfg.ConStr)
 	if err != nil {
 		log.Fatalf("Error preparing SQL connection: %v", err)
@@ -45,14 +45,14 @@ func main() {
 	}
 	log.Println("Successfully connected to Redis Container!")
 
-	lmt := tollbooth.NewLimiter(20, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
+	lmt := tollbooth.NewLimiter(float64(cfg.RateLimit), &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
 	lmt.SetMessage("Too many redirect requests. Please slow down.")
 	lmt.SetStatusCode(http.StatusTooManyRequests)
 
 	h := router.NewHandler(db, redisCache)
 
 	r := chi.NewRouter()
-	
+
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 

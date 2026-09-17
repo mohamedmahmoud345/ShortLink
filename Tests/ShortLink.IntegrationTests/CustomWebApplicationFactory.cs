@@ -83,8 +83,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     async Task IAsyncLifetime.DisposeAsync()
     {
         await Task.WhenAll(
-            _dbContainer.StopAsync(),
-            _redisContainer.StopAsync()
+            _dbContainer.DisposeAsync().AsTask(),
+            _redisContainer.DisposeAsync().AsTask()
         );
     }
 }

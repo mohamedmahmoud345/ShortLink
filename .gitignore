@@ -65,7 +65,7 @@ SCHEDULE2.md
 TODO.md
 PlanWithGo.md
 
-# go 
+# go
 
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
@@ -99,5 +99,3 @@ go.work.sum
 # Editor/IDE
 # .idea/
 .vscode/
-
-k6-test.js
