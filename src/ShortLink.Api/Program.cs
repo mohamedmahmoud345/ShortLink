@@ -168,6 +168,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "ShortLink:";
 });
 
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -211,6 +212,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapHealthChecks("/healthz");
+
 app.Run();
 
-public partial class Program {}
+public partial class Program { }

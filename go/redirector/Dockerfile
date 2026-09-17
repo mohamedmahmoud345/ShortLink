@@ -10,10 +10,15 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /shortlink-redirector ./cmd/redirector/
 
 # STAGE 2: Create a microscopic runtime image using alpine or scratch
-FROM alpine:3.19
+FROM alpine:3.21
 WORKDIR /
 
+RUN apk --no-cache add ca-certificates tzdata
+
 COPY --from=build /shortlink-redirector /shortlink-redirector
+
+USER nobody:nobody
+
 EXPOSE 8080
 
 ENTRYPOINT ["/shortlink-redirector"]

@@ -105,37 +105,50 @@ The redirector reads directly from SQL Server on a cache miss rather than callin
 
 ## Performance
 
-### Go Redirector (10 concurrent VUs, k6 load test)
+### Go Redirector (k6 load test)
 
-| Metric | Value |
-|---|---|
-| Throughput | **2,063 req/s** |
-| P50 latency | **4.27 ms** |
-| P95 latency | **7.63 ms** |
-| Max latency | **27.6 ms** |
-| Success rate | **100%** (20,637 / 20,637) |
+| Metric       | Value                      |
+| ------------ | -------------------------- |
+| Throughput   | **680.95 req/s**           |
+| P50 latency  | **16.88 ms**               |
+| P95 latency  | **197.94 ms**              |
+| Max latency  | **1940 ms**                |
+| Success rate | **100%** (41,261 / 41,261) |
 
-Tested with 10 concurrent virtual users over 10 seconds against a local Docker Compose deployment (Go redirector → Redis → SQL Server).
+Tested with k6 (ramp to 50 concurrent VUs) against a local Docker Compose
+deployment (Go redirector → Redis → SQL Server). Results are reproducible
+with the committed k6 script:
+
+### Running the load test
+
+```bash
+# With the stack up (docker compose up -d), from the repo root:
+k6 run k6-test.js
+```
+
+The script self-provisions a link (register -> login -> create) against the Admin API, then ramps redirect load against the Go redirector. Override endpoints with `-e`:
+`k6 run -e BASE_URL=http://localhost:8080 -e API_URL=http://localhost:5000 k6-test.js`
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **C# API** | ASP.NET Core 9, Clean Architecture, CQRS (MediatR), EF Core, FluentValidation |
-| **Go Service** | Chi router, go-redis/v9, tollbooth (rate limiter), go-mssqldb |
-| **Database** | SQL Server (Azure SQL Edge) |
-| **Cache** | Redis (StackExchange.Redis, go-redis) |
-| **Auth** | ASP.NET Core Identity + JWT Bearer |
-| **Testing** | xUnit, FluentAssertions, Testcontainers (MsSql + Redis), Go table-driven tests |
-| **DevOps** | Docker, Docker Compose, GitHub Actions |
+| Layer          | Technology                                                                     |
+| -------------- | ------------------------------------------------------------------------------ |
+| **C# API**     | ASP.NET Core 9, Clean Architecture, CQRS (MediatR), EF Core, FluentValidation  |
+| **Go Service** | Chi router, go-redis/v9, tollbooth (rate limiter), go-mssqldb                  |
+| **Database**   | SQL Server (Azure SQL Edge)                                                    |
+| **Cache**      | Redis (StackExchange.Redis, go-redis)                                          |
+| **Auth**       | ASP.NET Core Identity + JWT Bearer                                             |
+| **Testing**    | xUnit, FluentAssertions, Testcontainers (MsSql + Redis), Go table-driven tests |
+| **DevOps**     | Docker, Docker Compose, GitHub Actions                                         |
 
 ---
 
 ## Features
 
 ### C# Admin API
+
 - **JWT authentication** with ASP.NET Core Identity (register/login)
 - **Role-based authorization** (Admin / User) with admin endpoints
 - **Link CRUD** with ownership enforcement — users can only modify their own links
@@ -148,8 +161,9 @@ Tested with 10 concurrent virtual users over 10 seconds against a local Docker C
 - **Auto database migration** on startup via `MigrateAsync()`
 
 ### Go Redirector
+
 - **Cache-aside pattern** — checks Redis first, falls back to SQL Server on miss, populates cache
-- **~4ms median redirect latency** (P95 7.6ms at 2,063 req/s)
+- **~17ms median redirect latency** (P95 ~198ms at 680 req/s, measured with the committed k6 script)
 - **TTL-bounded caching** — min of link expiration or 24h max
 - **Per-IP rate limiting** — 20 requests per second via tollbooth
 - **Async analytics pipeline** — click events captured via goroutines with zero user-facing latency
@@ -208,11 +222,11 @@ dotnet test Tests/ShortLink.IntegrationTests/
 
 Tests use **Testcontainers** to spin up real SQL Server and Redis containers, then run tests against them. Covers:
 
-| Test file | Count | Scope |
-|---|---|---|
-| `AuthTests.cs` | 13 | Register, login, JWT validation, role access |
-| `ShortUrlTests.cs` | 25 | CRUD, ownership, refresh, inactive links, admin endpoints |
-| `ClickEventTests.cs` | 23 | Record clicks, analytics queries, internal token auth |
+| Test file            | Count | Scope                                                     |
+| -------------------- | ----- | --------------------------------------------------------- |
+| `AuthTests.cs`       | 13    | Register, login, JWT validation, role access              |
+| `ShortUrlTests.cs`   | 25    | CRUD, ownership, refresh, inactive links, admin endpoints |
+| `ClickEventTests.cs` | 23    | Record clicks, analytics queries, internal token auth     |
 
 ### Go Unit Tests (7 tests)
 
@@ -267,27 +281,27 @@ Table-driven tests with interface mocks — no external dependencies needed. Run
 
 ### C# API (`shortlink-api`)
 
-| Variable | Default | Description |
-|---|---|---|
-| `ConnectionStrings__conStr` | *required* | SQL Server connection string |
-| `ConnectionStrings__RedisConnection` | *required* | Redis connection string |
-| `Jwt__SecretKey` | *required* | JWT signing key |
-| `Jwt__Issuer` | `ShortLink` | JWT issuer |
-| `Jwt__Audience` | `ShortLink` | JWT audience |
-| `SeedAdmin__Email` | *optional* | Admin email for seeding |
-| `SeedAdmin__Password` | *optional* | Admin password for seeding |
-| `INTERNAL_SECURE_TOKEN` | *required* | Shared secret for Go → C# analytics |
+| Variable                             | Default     | Description                         |
+| ------------------------------------ | ----------- | ----------------------------------- |
+| `ConnectionStrings__conStr`          | _required_  | SQL Server connection string        |
+| `ConnectionStrings__RedisConnection` | _required_  | Redis connection string             |
+| `Jwt__SecretKey`                     | _required_  | JWT signing key                     |
+| `Jwt__Issuer`                        | `ShortLink` | JWT issuer                          |
+| `Jwt__Audience`                      | `ShortLink` | JWT audience                        |
+| `SeedAdmin__Email`                   | _optional_  | Admin email for seeding             |
+| `SeedAdmin__Password`                | _optional_  | Admin password for seeding          |
+| `INTERNAL_SECURE_TOKEN`              | _required_  | Shared secret for Go → C# analytics |
 
 ### Go Redirector (`redirector`)
 
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | `8080` | HTTP listen port |
-| `CON_STR` | *required* | SQL Server connection string (URL format) |
-| `REDIS_ADDRESS` | *required* | Redis host:port |
-| `REDIS_PASSWORD` | `""` | Redis password |
-| `INTERNAL_SECURE_TOKEN` | *required* | Must match C# API token |
-| `CS_API_URL` | *required* | C# analytics endpoint URL |
+| Variable                | Default    | Description                               |
+| ----------------------- | ---------- | ----------------------------------------- |
+| `PORT`                  | `8080`     | HTTP listen port                          |
+| `CON_STR`               | _required_ | SQL Server connection string (URL format) |
+| `REDIS_ADDRESS`         | _required_ | Redis host:port                           |
+| `REDIS_PASSWORD`        | `""`       | Redis password                            |
+| `INTERNAL_SECURE_TOKEN` | _required_ | Must match C# API token                   |
+| `CS_API_URL`            | _required_ | C# analytics endpoint URL                 |
 
 ---
 
@@ -295,10 +309,10 @@ Table-driven tests with interface mocks — no external dependencies needed. Run
 
 Two GitHub Actions workflows:
 
-| Workflow | Trigger | Steps |
-|---|---|---|
+| Workflow    | Trigger                     | Steps                                      |
+| ----------- | --------------------------- | ------------------------------------------ |
 | **.NET CI** | Changes to `src/`, `Tests/` | `dotnet restore → build → test` (61 tests) |
-| **Go CI** | Changes to `go/` | `go mod download → build → test` (7 tests) |
+| **Go CI**   | Changes to `go/`            | `go mod download → build → test` (7 tests) |
 
 ---
 

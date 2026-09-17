@@ -4,55 +4,80 @@ services:
     image: mcr.microsoft.com/azure-sql-edge
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "YourStrong!Pass123"
+      MSSQL_SA_PASSWORD: ${SQLSERVER_SA_PASSWORD:?require}
     ports:
       - "1433:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
-
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   shortlink-api:
     build:
       context: .
-      dockerfile: src/dockerfile
+      dockerfile: src/Dockerfile
+    restart: unless-stopped
     ports:
       - "5000:5000"
     environment:
       ASPNETCORE_URLS: "http://+:5000"
-      ConnectionStrings__conStr: "Server=sqlserver,1433;Database=ShortLink;User Id=sa;Password=YourStrong!Pass123;Encrypt=False;TrustServerCertificate=True"
-      ConnectionStrings__RedisConnection: "redis:6379"
-      Jwt__SecretKey: "change-this-to-a-real-secret-key-in-production"
+      ConnectionStrings__conStr: ${API_CONNECTION_STRING:?require}
+      ConnectionStrings__RedisConnection: ${API_REDIS_CONNECTION:-redis:6379}
+      Jwt__SecretKey: ${JWT_SECRET_KEY:?require}
       Jwt__Issuer: "ShortLink"
       Jwt__Audience: "ShortLink"
-      SeedAdmin__Email: "admin@shortlink.com"
-      SeedAdmin__Password: "SecureAdminPass123!"
-      INTERNAL_SECURE_TOKEN: "my-secure-internal-token"
+      SeedAdmin__Email: ${SEED_ADMIN_EMAIL:?require}
+      SeedAdmin__Password: ${SEED_ADMIN_PASSWORD:?require}
+      INTERNAL_SECURE_TOKEN: ${INTERNAL_SECURE_TOKEN:?require}
     depends_on:
-      - sqlserver
-      - redis
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   redirector:
     build:
       context: ./go/redirector
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       PORT: "8080"
-      CON_STR: "sqlserver://sa:YourStrong!Pass123@sqlserver:1433?database=ShortLink&encrypt=disable"
-      REDIS_ADDRESS: "redis:6379"
-      REDIS_PASSWORD: ""
-      INTERNAL_SECURE_TOKEN: "my-secure-internal-token"
+      CON_STR: ${REDIRECTOR_CON_STR:?require}
+      REDIS_ADDRESS: ${REDIS_ADDRESS:-redis:6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      INTERNAL_SECURE_TOKEN: ${INTERNAL_SECURE_TOKEN:?require}
       CS_API_URL: ${CS_API_URL:?required}
+      REDIRECTOR_RATE_LIMIT: ${REDIRECTOR_RATE_LIMIT:-20}
     depends_on:
-      - redis
-      - shortlink-api
-
+      redis:
+        condition: service_healthy
+      shortlink-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   sqlserver-data:
