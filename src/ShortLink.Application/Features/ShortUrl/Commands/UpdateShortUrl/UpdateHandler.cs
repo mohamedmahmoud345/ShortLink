@@ -1,5 +1,6 @@
 
 using MediatR;
+using Microsoft.Extensions.Logging;
 using ShortLink.Application.Common;
 using ShortLink.Application.Services;
 using ShortLink.Domain.Interfaces.UnitOfWork;
@@ -10,10 +11,12 @@ public class UpdateHandler : IRequestHandler<UpdateCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICacheService _cache;
-    public UpdateHandler(IUnitOfWork unitOfWork, ICacheService cacheService)
+    private readonly ILogger<UpdateHandler> _logger;
+    public UpdateHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ILogger<UpdateHandler> logger)
     {
         _unitOfWork = unitOfWork;
         _cache = cacheService;
+        _logger = logger;
     }
     public async Task<bool> Handle(UpdateCommand request, CancellationToken cancellationToken)
     {
@@ -32,7 +35,13 @@ public class UpdateHandler : IRequestHandler<UpdateCommand, bool>
         {
             await _cache.RemoveAsync(key);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to invalidate cache key {CacheKey}",
+                key);
+        }
 
         return true;
     }
