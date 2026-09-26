@@ -27,6 +27,7 @@ public class LinkCleanupService : BackgroundService
                     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                     var now = DateTime.UtcNow;
 
+                    // Intentional: no Redis DEL. Expired keys age out via Go maxTTL (1h). See README cache ownership.
                     var query = "UPDATE ShortUrls SET IsActive = 0 WHERE IsActive = 1 AND ExpiresAt IS NOT NULL AND ExpiresAt <= {0}";
                     var rows = await db.Database.ExecuteSqlRawAsync(query, new object[] { now },
                     cancellationToken: stoppingToken);

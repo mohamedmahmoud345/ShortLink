@@ -1,5 +1,6 @@
 
 using MediatR;
+using Microsoft.Extensions.Logging;
 using ShortLink.Application.Common;
 using ShortLink.Application.Services;
 using ShortLink.Domain.Interfaces.UnitOfWork;
@@ -10,10 +11,12 @@ public class DeleteHandler : IRequestHandler<DeleteCommand, bool>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICacheService _cache;
-    public DeleteHandler(IUnitOfWork unitOfWork, ICacheService cacheService)
+    private readonly ILogger<DeleteHandler> _logger;
+    public DeleteHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ILogger<DeleteHandler> logger)
     {
         _unitOfWork = unitOfWork;
         _cache = cacheService;
+        _logger = logger;
     }
     public async Task<bool> Handle(DeleteCommand request, CancellationToken cancellationToken)
     {
@@ -30,7 +33,13 @@ public class DeleteHandler : IRequestHandler<DeleteCommand, bool>
         {
             await _cache.RemoveAsync(key);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to invalidate cache key {CacheKey}",
+                key);
+        }
 
         return true;
     }

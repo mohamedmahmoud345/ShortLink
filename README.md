@@ -97,6 +97,12 @@ The admin side is where complexity lives: authentication, authorization, ownersh
 
 Write-through would require the C# API to populate Redis on every link mutation, coupling the services more tightly. Cache-aside keeps the redirector self-sufficient — it populates its own cache on miss, and the admin API only needs to invalidate on change. A cold Redis instance recovers naturally under real traffic with no manual warming step.
 
+Conscious tradeoffs (Issue #15):
+
+- C# `GetByShortCode` has no read-through by design — it's the authenticated admin path, not the redirect hot path, so caching it adds little.
+- Expiry cleanup (`LinkCleanupService`) does not `DEL` Redis keys — expired entries age out via the 1h max TTL (accepted ≤1h staleness).
+- No negative cache for 404/expired misses — avoids caching transient DB errors and sentinel complexity; invalid-code scans still hit SQL. Revisit with a 5m `__NOTFOUND__` sentinel if scan load becomes a problem.
+
 ### Why a shared database?
 
 The redirector reads directly from SQL Server on a cache miss rather than calling the C# API. This eliminates an extra network hop on the hot path and removes the admin API as a runtime dependency for the redirector. A single source of truth also avoids the dual-write consistency problems that come with separate databases.

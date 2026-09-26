@@ -48,7 +48,7 @@ public class ClickEventRepository : IClickEventRepository
             FROM ClickEvents
             WHERE ShortUrlId = @urlId
             GROUP BY Country
-            ORDER BY Count DESC          
+            ORDER BY Count DESC
         ";
 
         return await connection.QueryAsync<CountryStats>(query, new { urlId });
@@ -86,7 +86,7 @@ public class ClickEventRepository : IClickEventRepository
     {
         using var connection = _dapperContext.CreateConnection();
         var query = @"
-            SELECT ISNULL(Referrer, '(direct)') AS Referrer, COUNT(*) AS Count
+            SELECT ISNULL(Referrer, 'Direct') AS Referrer, COUNT(*) AS Count
             FROM ClickEvents
             WHERE ShortUrlId = @urlId
             GROUP BY Referrer
