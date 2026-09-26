@@ -11,6 +11,7 @@ using ShortLink.Application.Features.ShortUrl.Commands.CreateShortUrl;
 using ShortLink.Application.Features.ShortUrl.Queries.GetById;
 using ShortLink.Infrastructure.Data;
 using FluentAssertions;
+using ShortLink.Application.Services;
 
 namespace ShortLink.IntegrationTests;
 
@@ -200,6 +201,31 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task Update_InvalidatesRedisCache()
+    {
+        var token = await GetTokenAsync();
+        SetAuthHeader(token);
+        var created = await CreateShortUrlAsync("https://example.com");
+
+        // Seed Redis as Go would have it: link:{code} -> url
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
+            await cache.SetAsync($"link:{created.ShortCode}", created.OriginalLink, TimeSpan.FromHours(1));
+            (await cache.GetAsync<string>($"link:{created.ShortCode}")).Should().NotBeNull();
+        }
+
+        var content = new StringContent("\"https://updated-url.com\"", Encoding.UTF8, "application/json");
+        var response = await _client.PutAsync($"/api/v1/shorturl/{created.Id}", content);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
+            (await cache.GetAsync<string>($"link:{created.ShortCode}")).Should().BeNull();
+        }
+    }
     // ---- Delete Tests ----
 
     [Fact]
@@ -237,6 +263,30 @@ public class ShortUrlTests : IClassFixture<CustomWebApplicationFactory>
         var response = await _client.DeleteAsync($"/api/v1/shorturl/{created.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Delete_InvalidatesRedisCache()
+    {
+        var token = await GetTokenAsync();
+        SetAuthHeader(token);
+        var created = await CreateShortUrlAsync("https://example.com");
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
+            await cache.SetAsync($"link:{created.ShortCode}", created.OriginalLink, TimeSpan.FromHours(1));
+            (await cache.GetAsync<string>($"link:{created.ShortCode}")).Should().NotBeNull();
+        }
+
+        var response = await _client.DeleteAsync($"/api/v1/shorturl/{created.Id}");
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
+            (await cache.GetAsync<string>($"link:{created.ShortCode}")).Should().BeNull();
+        }
     }
 
     // ---- Refresh Tests ----
