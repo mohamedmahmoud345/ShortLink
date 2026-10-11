@@ -165,7 +165,6 @@ var redisConnectionString = builder.Configuration.GetConnectionString("RedisConn
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnectionString;
-    options.InstanceName = "ShortLink:";
 });
 
 builder.Services.AddHealthChecks();
