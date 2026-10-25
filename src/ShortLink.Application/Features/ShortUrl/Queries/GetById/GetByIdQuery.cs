@@ -7,8 +7,10 @@ namespace ShortLink.Application.Features.ShortUrl.Queries.GetById;
 public class GetByIdQuery : IRequest<QueryResponse>
 {
     public Guid Id { get; set; }
-    public GetByIdQuery(Guid id)
+    public Guid UserId { get; set; }
+    public GetByIdQuery(Guid id, Guid userId)
     {
         Id = id;
+        UserId = userId;
     }
 }

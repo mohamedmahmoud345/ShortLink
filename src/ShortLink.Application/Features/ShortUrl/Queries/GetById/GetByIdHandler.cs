@@ -14,7 +14,7 @@ public class GetByIdHandler : IRequestHandler<GetByIdQuery, QueryResponse>
     }
     public async Task<QueryResponse> Handle(GetByIdQuery request, CancellationToken cancellationToken)
     {
-        var url = await _unitOfWork.ShortUrls.GetByIdAsync(request.Id);
+        var url = await _unitOfWork.ShortUrls.GetByIdAsync(request.Id, request.UserId);
         if (url is null)
             throw new NotFoundException($"The link with ID '{request.Id}' was not found.");
 
