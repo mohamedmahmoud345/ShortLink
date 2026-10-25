@@ -18,10 +18,10 @@ public class ShortUrlRepository : IShortUrlRepository
         await _context.SaveChangesAsync();
         return shortUrl;
     }
-    public async Task<ShortUrl?> GetByIdAsync(Guid id)
+    public async Task<ShortUrl?> GetByIdAsync(Guid id, Guid userId)
     {
         return await _context.ShortUrls
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
     }
     public async Task<ShortUrl?> GetByShortCodeAsync(string shortCode)
     {

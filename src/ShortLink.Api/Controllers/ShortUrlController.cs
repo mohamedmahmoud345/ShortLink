@@ -53,9 +53,13 @@ namespace ShortLink.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var query = new GetByIdQuery(id);
+            var userId = GetUserId();
+            if (userId == null)
+                return Unauthorized();
+
+            var query = new GetByIdQuery(id, userId);
             var res = await _mediator.Send(query);
-            
+
             return Ok(res);
         }
 
@@ -106,7 +110,7 @@ namespace ShortLink.Api.Controllers
         {
             var query = new GetByShortCodeQuery(shortCode);
             var res = await _mediator.Send(query);
-            
+
 
             return Ok(res);
         }
@@ -137,7 +141,7 @@ namespace ShortLink.Api.Controllers
                 return Unauthorized();
 
             var command = new DeleteCommand(urlId, userId);
-            var res =await _mediator.Send(command);
+            var res = await _mediator.Send(command);
             if (res == false)
                 return BadRequest();
 

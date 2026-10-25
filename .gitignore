@@ -95,3 +95,4 @@ go.work.sum
 # Editor/IDE
 # .idea/
 .vscode/
+AGENTS.md

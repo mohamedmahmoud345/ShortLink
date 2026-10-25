@@ -6,7 +6,7 @@ namespace ShortLink.Domain.Interfaces.Repositories;
 public interface IShortUrlRepository
 {
     Task<ShortUrl> CreateAsync(ShortUrl shortUrl);
-    Task<ShortUrl?> GetByIdAsync(Guid id);
+    Task<ShortUrl?> GetByIdAsync(Guid id, Guid userId);
     Task<ShortUrl?> GetByShortCodeAsync(string shortCode);
     Task<IEnumerable<ShortUrl>> GetAllByUserIdAsync(Guid userId);
     Task<IEnumerable<ShortUrl>> GetAllAsync(); // for admin
